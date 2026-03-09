@@ -165,20 +165,26 @@ When updating this file, prefer accuracy over optimism.
 - **Output:** `composables/useSupabase.ts`, `plugins/supabase.ts`, `types/database.ts`
 
 ### T-201: Auth Pages
+- **Status:** `PARTIAL`
 - **Depends on:** T-200
 - **Agent scope:** Login, register, forgot password, email verification
 - **Acceptance criteria:**
-  - `pages/auth/login.vue` — email/password login
-  - `pages/auth/register.vue` — registration with role selection
-    - Onboarding wizard for parents (add first child)
-  - `pages/auth/forgot-password.vue` — send reset email
-  - `pages/auth/reset-password.vue` — set new password
-  - `pages/auth/verify.vue` — email verification callback
-  - Form validation (client-side)
-  - Error messages (wrong password, email taken, etc.)
-  - Redirect after login: parents → /portal, staff → /admin
-  - Mobile responsive
-- **Output:** `pages/auth/*.vue`
+  - `frontend/pages/auth/login.vue` — implemented
+  - `frontend/pages/auth/register.vue` — implemented
+    - Parent-first onboarding for adding first child is implemented
+    - Role selection is **not** implemented and should be treated as out of scope for public signup unless product decision changes
+  - `frontend/pages/auth/forgot-password.vue` — implemented
+  - `frontend/pages/auth/reset-password.vue` — implemented
+  - `frontend/pages/auth/verify.vue` — implemented
+  - Client-side validation — partial
+  - Error messages (wrong password, email taken, etc.) — partial
+  - Redirect after login: parents → `/portal`, staff/admin/expert → `/admin` — implemented in frontend logic
+  - Mobile responsive — implemented at page level, still needs runtime verification
+- **Output:** `frontend/pages/auth/*.vue`
+- **Remaining work:**
+  - verify end-to-end flows against a running local Supabase stack
+  - tighten field validation and auth error mapping
+  - confirm whether role selection belongs in public registration or admin assignment only
 
 ### T-202: Auth Middleware
 - **Status:** ✅ DONE
@@ -194,18 +200,24 @@ When updating this file, prefer accuracy over optimism.
 - **Output:** `middleware/*.ts`
 
 ### T-203: RLS Policies
+- **Status:** `PARTIAL`
 - **Depends on:** T-102
 - **Agent scope:** Row Level Security for ALL tables
 - **Input:** `docs/arhitektura/04-auth-and-roles.md`
 - **Acceptance criteria:**
-  - Every table has SELECT, INSERT, UPDATE, DELETE policies
-  - Parents: see own children + related data only
-  - Staff: see children in their groups
-  - Admin: full access
-  - Expert: read-only on observations/assessments
-  - Service role bypasses RLS (for Python API)
-  - Test each policy with different user roles
-- **Output:** `supabase/migrations/011_rls_policies.sql` (updated)
+  - Critical RLS exists in current migrations, but not as a single verified `011_rls_policies.sql` file
+  - Coverage for every table is **not yet verified**
+  - Parent/staff/admin/expert access rules must be validated against live test users
+  - Service role bypass expectation remains part of target architecture and must be confirmed during backend integration
+  - Policy testing per role is still pending
+- **Current implementation note:**
+  - RLS logic is currently distributed across migration files such as `010_core.sql` and later schema files
+  - `011_groups.sql` exists, but there is no standalone `011_rls_policies.sql` in the repo
+- **Output:** `supabase/migrations/` (distributed policies, requires audit and consolidation decision)
+- **Remaining work:**
+  - audit policy coverage table-by-table
+  - decide whether to consolidate RLS into a dedicated migration or keep distributed policies and document them clearly
+  - test each critical policy path with real role-specific sessions
 
 ---
 
@@ -528,15 +540,17 @@ When updating this file, prefer accuracy over optimism.
 ## PHASE 6: Public Website
 
 ### T-600: Landing Page
+- **Status:** `PLANNED`
 - **Depends on:** T-100
 - **Agent scope:** Homepage — SSR for SEO
 - **Acceptance criteria:**
-  - `pages/index.vue` — hero, features, testimonials, CTA
+  - `frontend/pages/index.vue` — currently missing
+  - hero, features, testimonials, CTA
   - SEO meta tags
   - Mobile responsive
   - Fast loading (< 2s)
   - Links to registration
-- **Output:** `pages/index.vue`
+- **Output:** `frontend/pages/index.vue`
 
 ### T-601: Program Page
 - **Status:** ✅ DONE (Claude — `pages/program.vue`)
@@ -645,42 +659,52 @@ When updating this file, prefer accuracy over optimism.
 - **Output:** `/public/logo*`, font loading in `nuxt.config.ts` or `app.vue`
 
 ### T-800: Base UI Components
+- **Status:** `PLANNED`
 - **Depends on:** T-100, T-790
 - **Agent scope:** Reusable Tailwind components — colorful, rounded, branded
 - **Input:** `docs/arhitektura/18-ui-design-guidelines.md`
 - **Acceptance criteria:**
-  - `components/ui/Button.vue` — variants: primary (purple), secondary (outline), danger (red), success (green), ghost
+  - `frontend/components/ui/Button.vue` — variants: primary (purple), secondary (outline), danger (red), success (green), ghost
     - Rounded-xl, font-bold, shadow-colorful on primary
-  - `components/ui/Input.vue` — text, email, password, textarea (rounded-xl, focus ring in primary color)
-  - `components/ui/Select.vue` — dropdown with search
-  - `components/ui/Modal.vue` — dialog with backdrop, rounded-2xl
-  - `components/ui/Card.vue` — white, rounded-2xl, shadow-card, optional color top bar
-  - `components/ui/DomainCard.vue` — card with domain color left border + icon
-  - `components/ui/DataTable.vue` — sortable, filterable table
-  - `components/ui/Badge.vue` — status badges (tier, domain, parent status) with brand colors
-  - `components/ui/Toast.vue` — notification toasts (4 variants: info/success/warning/error using brand colors)
-  - `components/ui/Tabs.vue` — tab navigation with active indicator in primary color
-  - `components/ui/Calendar.vue` — date picker / calendar view
-  - `components/ui/ProgressBar.vue` — colorful progress bar (domain-colored)
-  - `components/ui/Avatar.vue` — rounded photo with optional colored ring border
+  - `frontend/components/ui/Input.vue` — text, email, password, textarea (rounded-xl, focus ring in primary color)
+  - `frontend/components/ui/Select.vue` — dropdown with search
+  - `frontend/components/ui/Modal.vue` — dialog with backdrop, rounded-2xl
+  - `frontend/components/ui/Card.vue` — white, rounded-2xl, shadow-card, optional color top bar
+  - `frontend/components/ui/DomainCard.vue` — card with domain color left border + icon
+  - `frontend/components/ui/DataTable.vue` — sortable, filterable table
+  - `frontend/components/ui/Badge.vue` — status badges (tier, domain, parent status) with brand colors
+  - `frontend/components/ui/Toast.vue` — notification toasts (4 variants: info/success/warning/error using brand colors)
+  - `frontend/components/ui/Tabs.vue` — tab navigation with active indicator in primary color
+  - `frontend/components/ui/Calendar.vue` — date picker / calendar view
+  - `frontend/components/ui/ProgressBar.vue` — colorful progress bar (domain-colored)
+  - `frontend/components/ui/Avatar.vue` — rounded photo with optional colored ring border
   - All components use brand colors from tailwind.config.ts
   - All components use Nunito font, headings in Baloo 2
   - Rounded corners (xl to 2xl), soft shadows throughout
   - Accessible (ARIA attributes, focus states, contrast ratios)
   - Mobile-first, touch-friendly (44px min tap targets)
-- **Output:** `components/ui/`
+- **Current implementation note:**
+  - styling primitives currently live mainly in `frontend/assets/css/main.css`
+  - there is no `frontend/components/ui/` library in the repo yet
+- **Output:** `frontend/components/ui/`
 
 ### T-801: Layout Components — Branded
+- **Status:** `PARTIAL`
 - **Depends on:** T-800
 - **Agent scope:** Branded header, footer, sidebar components
 - **Acceptance criteria:**
-  - Public header: logo (from `/public/logo.svg`), colorful nav, mobile hamburger
-  - Public footer: logo, links, social icons, brand gradient divider
-  - Portal sidebar: logo at top, domain-colored icons for child sections, active state with primary color
-  - Admin sidebar: logo at top, clean professional style with brand accents
-  - All layouts use the official Sarena Sfera logo
-  - Gradient accents (purple → pink) on key sections
-- **Output:** Updated `layouts/`, `components/layout/`
+  - Public header exists in `frontend/layouts/default.vue` — partial
+  - Public footer exists in `frontend/layouts/default.vue` — partial
+  - Portal sidebar/top nav exist in `frontend/layouts/portal.vue`, `frontend/components/portal/Sidebar.vue`, `frontend/components/portal/TopNav.vue`
+  - Admin layout/sidebar exist in `frontend/layouts/admin.vue`
+  - Official logo integration is **not verified**
+  - Shared branded layout component library under `frontend/components/layout/` does not exist yet
+  - Gradient accents exist in parts of the frontend, but not as a standardized layout system
+- **Output:** updated `frontend/layouts/`, `frontend/components/portal/`, optional future `frontend/components/layout/`
+- **Remaining work:**
+  - replace placeholder initials/logo blocks with official logo assets
+  - standardize public, portal, and admin shells into reusable branded layout components
+  - complete visual consistency pass after `T-800`
 
 ---
 
@@ -1028,31 +1052,40 @@ When updating this file, prefer accuracy over optimism.
 - **Output:** migration file, seed data
 
 ### T-1001: Child Growth Timeline View
+- **Status:** `DONE`
 - **Depends on:** T-302, T-1000
 - **Agent scope:** Visual timeline of child's growth milestones
 - **Acceptance criteria:**
-  - `pages/portal/children/[id]/progress.vue` — growth timeline tab
+  - `frontend/pages/portal/children/[id]/progress.vue` — growth timeline tab
   - Monthly grouping: milestones achieved, photos added, observations received
   - Domain-colored milestone icons (reuse domain color scheme)
   - Status indicators: achieved (green), emerging (yellow), not started (gray)
   - Filter by domain
   - Paid tier feature
-- **Output:** `pages/portal/children/[id]/progress.vue`, timeline components
+- **Current implementation note:**
+  - implemented in `frontend/pages/portal/children/[id]/progress.vue`
+  - uses timeline grouping for milestones, observations, and linked observation media counts
+- **Output:** `frontend/pages/portal/children/[id]/progress.vue`, timeline components
 
 ### T-1002: Domain Detail View
+- **Status:** `PARTIAL`
 - **Depends on:** T-303, T-1000
 - **Agent scope:** Per-domain breakdown page for a child
 - **Acceptance criteria:**
-  - `pages/portal/children/[id]/domain/[domain].vue`
+  - `frontend/pages/portal/children/[id]/domain/[domain].vue` — implemented
   - Current score + progress bar (X of Y milestones achieved)
   - Milestone checklist: achieved, emerging, upcoming
   - Trend chart (score over quarters)
   - Recommended activities for this domain
   - Link to related home activities from library
   - Paid tier feature
-- **Output:** Domain detail page
+- **Current implementation note:**
+  - route exists and includes `FeatureGate`
+  - milestone checklist, trend, and recommendations are currently driven by sample/mock data, not verified live data flow
+- **Output:** `frontend/pages/portal/children/[id]/domain/[domain].vue`
 
 ### T-1003: Staff Milestone Quick-Entry
+- **Status:** `PARTIAL`
 - **Depends on:** T-405, T-1000
 - **Agent scope:** Add milestone marking to observation entry flow
 - **Acceptance criteria:**
@@ -1061,34 +1094,49 @@ When updating this file, prefer accuracy over optimism.
   - Checkbox to mark milestones as "emerging" or "achieved"
   - Auto-link milestone to observation
   - Bulk milestone marking for post-workshop assessment
-- **Output:** Updated observation form components
+- **Current implementation note:**
+  - `frontend/pages/admin/observations/index.vue` now includes milestone quick-entry by selected child + domain + age bracket
+  - selected milestones are upserted into `child_milestones` and linked back to the newly created observation
+  - dedicated post-workshop bulk assessment UX still needs a stronger workflow than the current modal-based multi-select
+- **Output:** updated observation form components
 
 ### T-1004: Parent Observations (Moderated)
+- **Status:** `DONE`
 - **Depends on:** T-302, T-200
 - **Agent scope:** Let parents submit home observations for staff review
 - **Acceptance criteria:**
   - SQL migration: `parent_observations` table (child_id, parent_id, domain, content, photo_url, status)
-  - `pages/portal/children/[id]/observe.vue` — parent observation form
+  - `frontend/pages/portal/children/[id]/observe.vue` — parent observation form
     - Select domain, write note, upload photo
     - Status: pending → approved/rejected by staff
-  - Staff view: `pages/admin/parent-observations.vue` — review queue
+  - Staff view: `frontend/pages/admin/parent-observations.vue` — review queue
     - Approve (link to child record) or reject (with note)
   - Approved observations appear in child timeline
   - Notification to parent when reviewed
-- **Output:** Migration, portal + admin pages
+- **Current implementation note:**
+  - `supabase/migrations/023_parent_observations.sql` now adds moderated parent observation storage and RLS
+  - `frontend/pages/portal/children/[id]/observe.vue` now provides parent submission flow and submission status history
+  - `frontend/pages/admin/parent-observations.vue` now provides review queue with approve/reject actions, child-record linking, and parent notification
+  - approval creates a regular staff observation so approved content can flow into the existing child timeline/read model
+  - photo attachment now uploads to Supabase Storage bucket `parent-observations` before moderation and is attached back to approved child observations
+- **Output:** migration, portal + admin pages
 
 ### T-1005: Passport Comparison View
+- **Status:** `DONE`
 - **Depends on:** T-303
 - **Agent scope:** Compare child development across time periods
 - **Acceptance criteria:**
-  - `components/portal/PassportComparison.vue`
+  - `frontend/components/portal/PassportComparison.vue`
   - Radar chart overlay: current quarter vs previous vs age average
   - Table view: domain scores side by side with change indicators (↑/↓)
   - Highlight biggest improvement and area needing attention
   - Paid tier feature
-- **Output:** Comparison component
+- **Current implementation note:**
+  - implemented in `frontend/components/portal/PassportComparison.vue`
+  - integrated into `frontend/components/portal/PassportView.vue`
+- **Output:** comparison component
 
-### T-1010: Educational Content — Database
+### ✅ T-1010: Educational Content — Database — DONE (Claude)
 - **Depends on:** T-102
 - **Agent scope:** Schema for all educational content types
 - **Acceptance criteria:**
@@ -1099,82 +1147,109 @@ When updating this file, prefer accuracy over optimism.
     - `course_enrollments` — user enrollment tracking
     - `lesson_progress` — per-lesson completion tracking
     - `content_registrations` — event registration (replaces/extends event_registrations)
-    - `resource_materials` — attachments for resource content
+  - `resource_materials` — attachments for resource content
   - All indexes from doc 17
   - RLS: public can see published content, users track own progress, admin full CRUD
-- **Output:** Migration file
+- **Output:** `supabase/migrations/021_education.sql`
 
 ### T-1011: Online Courses — Portal View
+- **Status:** `PARTIAL`
 - **Depends on:** T-300, T-1010
 - **Agent scope:** Course browsing, enrollment, and lesson viewing for parents
 - **Acceptance criteria:**
-  - `pages/portal/education/courses/index.vue` — course catalog
+  - `frontend/pages/portal/education/courses/index.vue` — course catalog
     - Grid of course cards (cover, title, duration, lessons count, tier badge)
     - Filter by domain, age range, tier
-  - `pages/portal/education/courses/[slug].vue` — course detail + syllabus
+  - `frontend/pages/portal/education/courses/[slug].vue` — course detail + syllabus
     - Module/lesson tree with progress indicators
     - Enroll button (or continue)
     - Preview first lesson (free)
-  - `pages/portal/education/courses/[slug]/lessons/[id].vue` — lesson view
+  - `frontend/pages/portal/education/courses/[slug]/lessons/[id].vue` — lesson view
     - HTML content or video player
     - Downloadable attachments
     - Mark as complete
     - Previous/Next navigation
   - Progress tracking (auto-save, resume where left off)
   - Tier gate: Free=1st lesson, Paid=3 courses, Premium=all
-- **Output:** `pages/portal/education/courses/`
+- **Current implementation note:**
+  - `frontend/pages/portal/education/courses/index.vue` now provides course catalog filters and progress-aware cards
+  - `frontend/pages/portal/education/courses/[slug].vue` now provides course detail, module tree, preview/continue flow, and enrollment
+  - `frontend/pages/portal/education/courses/[slug]/lessons/[id].vue` now provides lesson content, attachments, previous/next navigation, and lesson completion tracking
+  - exact business rule `Paid=3 courses, Premium=all` still needs backend-enforced quota logic instead of simple tier access
+- **Output:** `frontend/pages/portal/education/courses/`
 
 ### T-1012: Events & Webinars — Portal + Public
+- **Status:** `PARTIAL`
 - **Depends on:** T-830, T-1010
 - **Agent scope:** Combined online/offline event listing and registration
 - **Acceptance criteria:**
   - Extend existing events pages (T-830) to support all 4 event types
-  - `pages/events/index.vue` — add tabs: Sve / Radionice / Webinari / Dogadjaji
+  - `frontend/pages/events/index.vue` — currently implemented only as general event/workshop listing
+  - add tabs: Sve / Radionice / Webinari / Dogadjaji
   - Event card shows: type icon (online/offline), date, location/link, spots left
   - Registration form handles both online (sends meeting link) and offline events
-  - Portal view: `pages/portal/education/events.vue` — my registered events
+  - Portal view: `frontend/pages/portal/education/events.vue` — my registered events
   - Past event recordings accessible (Premium tier)
   - Calendar download (.ics) for registered events
-- **Output:** Updated event pages, portal events page
+- **Current implementation note:**
+  - public event listing/detail/registration pages exist
+  - educational content event model exists in DB
+  - `frontend/pages/events/index.vue` now includes public type tabs and blends legacy workshops with education `event/webinar` content for discovery
+  - `frontend/pages/portal/education/events.vue` now exists with my registrations, webinar links, premium recordings panel, and `.ics` calendar export
+  - full end-to-end event detail/registration on the new education model is still incomplete because repo still uses legacy `events` / `event_registrations` for the detailed public flow
+- **Output:** updated public event pages, portal events page
 
 ### T-1013: Educational Resources — Portal View
+- **Status:** `PARTIAL`
 - **Depends on:** T-300, T-1010
 - **Agent scope:** Article, PDF, and video resource library
 - **Acceptance criteria:**
-  - `pages/portal/education/resources/index.vue` — resource library
+  - `frontend/pages/portal/education/resources/index.vue` — resource library
     - Filter by type (article, PDF, video, worksheet), domain, age
     - Card layout with type icon
-  - `pages/portal/education/resources/[slug].vue` — resource detail
+  - `frontend/pages/portal/education/resources/[slug].vue` — resource detail
     - Article: rendered HTML
     - PDF: download button + preview
     - Video: embedded player
   - Download tracking (count, last downloaded)
   - Tier gate: Free=5, Paid=20/month, Premium=unlimited
   - Public resources available without login (lead capture on download)
-- **Output:** `pages/portal/education/resources/`
+- **Current implementation note:**
+  - current repo has public `resources.vue`
+  - `frontend/pages/portal/education/resources/index.vue` and `frontend/pages/portal/education/resources/[slug].vue` now provide a portal resource library and detail view backed by `educational_content` + `resource_materials`
+  - tier limits, public lead-capture integration with the new portal flow, and robust download analytics still need hardening
+- **Output:** `frontend/pages/portal/education/resources/`
 
 ### T-1014: Educational Content — Admin Management
+- **Status:** `DONE`
 - **Depends on:** T-400, T-1010
 - **Agent scope:** Admin CRUD for all educational content
 - **Acceptance criteria:**
-  - `pages/admin/education/index.vue` — content list (all types, filterable)
-  - `pages/admin/education/courses/new.vue` — course creator
+  - `frontend/pages/admin/education/index.vue` — content list (all types, filterable)
+  - `frontend/pages/admin/education/courses/new.vue` — course creator
     - Course details form
     - Module manager (add, reorder, delete)
     - Lesson editor per module (rich text, video URL, attachments)
     - Preview mode
-  - `pages/admin/education/events/new.vue` — event creator
+  - `frontend/pages/admin/education/events/new.vue` — event creator
     - Type selector (4 types)
     - Scheduling, location/link, capacity
     - Registration management (confirm, waitlist, cancel)
-  - `pages/admin/education/resources/new.vue` — resource creator
+  - `frontend/pages/admin/education/resources/new.vue` — resource creator
     - Type selector, file upload, content editor
   - Publish/draft/archive status management
   - Duplicate content (for recurring events)
   - Analytics per content item (views, enrollments, completion rate)
-- **Output:** `pages/admin/education/`
+- **Current implementation note:**
+  - `frontend/pages/admin/education/index.vue` now provides filterable content management with publish/draft/archive, duplication entry points, and analytics counters
+  - `frontend/pages/admin/education/courses/new.vue` now provides course creation/editing, module + lesson management, and preview link
+  - `frontend/pages/admin/education/events/new.vue` now provides 4-type event/webinar management, schedule/location/capacity fields, registration management, duplication, and preview link
+  - `frontend/pages/admin/education/resources/new.vue` now provides resource CRUD, article/video/file content editing, upload to storage, duplication, and preview link
+  - `supabase/migrations/024_education_management_extensions.sql` now extends the education schema for admin-managed event/resource metadata and storage support
+- **Output:** `frontend/pages/admin/education/`
 
 ### T-1015: Education Seed Data
+- **Status:** `PLANNED`
 - **Depends on:** T-1010
 - **Agent scope:** Seed educational content for development/demo
 - **Acceptance criteria:**
@@ -1183,7 +1258,9 @@ When updating this file, prefer accuracy over optimism.
   - 5 resources (2 articles, 2 PDFs, 1 video)
   - Content across multiple domains
   - Mix of free and tiered content
-- **Output:** Seed SQL file
+- **Current implementation note:**
+  - education schema exists, but dedicated education seed file/content is not present in current repo
+- **Output:** seed SQL file
 
 ---
 

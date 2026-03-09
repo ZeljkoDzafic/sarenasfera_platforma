@@ -1,43 +1,383 @@
-name: Deploy
+name: Deploy to Production
 
 on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deployment environment'
+      provider:
+        description: 'Deployment provider'
         required: true
-        default: 'production'
         type: choice
         options:
-          - production
+          - digitalocean
+          - aws
+          - azure
+          - all
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options:
           - staging
+          - production
+        default: 'production'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  FRONTEND_IMAGE: ${{ github.repository }}/frontend
+  API_IMAGE: ${{ github.repository }}/api
 
 jobs:
-  build-and-deploy:
-    name: Build & Deploy
+  # ───────────────────────────────────────────────────────────
+  # LINT & TEST
+  # ───────────────────────────────────────────────────────────
+  lint-and-test:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Lint frontend
+      working-directory: ./frontend
+      run: npm run lint
+    
+    - name: Type check frontend
+      working-directory: ./frontend
+      run: npm run typecheck
+    
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+    
+    - name: Install API dependencies
+      working-directory: ./api
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Lint API
+      working-directory: ./api
+      run: |
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    
+    - name: Validate SQL migrations
+      run: |
+        for file in supabase/migrations/*.sql; do
+          echo "Validating $file..."
+          if ! grep -q "^--" "$file"; then
+            echo "Warning: $file may be missing header comment"
+          fi
+        done
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+  # ───────────────────────────────────────────────────────────
+  # BUILD DOCKER IMAGES
+  # ───────────────────────────────────────────────────────────
+  build-images:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,format=short
+    
+    - name: Build and push Frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile.prod
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push API
+      uses: docker/build-push-action@v5
+      with:
+        context: ./api
+        file: ./api/Dockerfile.prod
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
+  # ───────────────────────────────────────────────────────────
+  # DEPLOY TO DIGITALOCEAN
+  # ───────────────────────────────────────────────────────────
+  deploy-digitalocean:
+    needs: build-images
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.provider == 'digitalocean' || github.event.inputs.provider == 'all')) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://platforma.sarenasfera.com
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_TOKEN }}
+    
+    - name: Deploy to DigitalOcean App Platform
+      run: |
+        doctl apps create --spec .do/app.yaml --wait || \
+        doctl apps update $APP_ID --spec .do/app.yaml --wait
+      env:
+        APP_ID: ${{ secrets.DIGITALOCEAN_APP_ID }}
+    
+    - name: Deploy to DigitalOcean Droplet (SSH)
+      if: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.DIGITALOCEAN_DROPLET_IP }}
+        username: root
+        key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+        script: |
+          cd /opt/sarenasfera_platforma
+          git pull origin main
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker system prune -af
 
-      - name: Build frontend
-        working-directory: frontend
-        run: npx nuxi build
-        env:
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          NUXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+  # ───────────────────────────────────────────────────────────
+  # DEPLOY TO AWS
+  # ───────────────────────────────────────────────────────────
+  deploy-aws:
+    needs: build-images
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.provider == 'aws' || github.event.inputs.provider == 'all')) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://platforma.sarenasfera.com
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+    
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+    
+    - name: Push Frontend to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: sarenasfera-frontend
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        docker tag ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    
+    - name: Push API to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: sarenasfera-api
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:${{ github.sha }}
+        docker tag ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:${{ github.sha }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    
+    - name: Deploy to ECS
+      run: |
+        aws ecs update-service \
+          --cluster sarenasfera-platforma \
+          --service frontend-service \
+          --force-new-deployment
+        
+        aws ecs update-service \
+          --cluster sarenasfera-platforma \
+          --service api-service \
+          --force-new-deployment
 
-      # Add deployment steps here (SSH, Docker push, etc.)
-      - name: Deploy placeholder
-        run: echo "Deployment steps will be configured for ${{ inputs.environment }}"
+  # ───────────────────────────────────────────────────────────
+  # DEPLOY TO AZURE
+  # ───────────────────────────────────────────────────────────
+  deploy-azure:
+    needs: build-images
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.provider == 'azure' || github.event.inputs.provider == 'all')) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://platforma.sarenasfera.com
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Login to Azure Container Registry
+      uses: azure/docker-login@v2
+      with:
+        login-server: sarenasfera.azurecr.io
+        username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+    
+    - name: Push Frontend to ACR
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        docker tag ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }} sarenasfera.azurecr.io/frontend:${{ github.sha }}
+        docker push sarenasfera.azurecr.io/frontend:${{ github.sha }}
+    
+    - name: Push API to ACR
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:${{ github.sha }}
+        docker tag ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:${{ github.sha }} sarenasfera.azurecr.io/api:${{ github.sha }}
+        docker push sarenasfera.azurecr.io/api:${{ github.sha }}
+    
+    - name: Deploy to Azure Container Apps
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az containerapp revision copy \
+            --name sarenasfera-frontend \
+            --resource-group sarenasfera-rg \
+            --source-revision-name $(az containerapp show -n sarenasfera-frontend -g sarenasfera-rg --query properties.latestRevisionName -o tsv)
+          
+          az containerapp revision copy \
+            --name sarenasfera-api \
+            --resource-group sarenasfera-rg \
+            --source-revision-name $(az containerapp show -n sarenasfera-api -g sarenasfera-rg --query properties.latestRevisionName -o tsv)
+
+  # ───────────────────────────────────────────────────────────
+  # DEPLOY TO HOSTGATOR (FTP)
+  # ───────────────────────────────────────────────────────────
+  deploy-hostgator:
+    needs: build-images
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.provider == 'hostgator'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm run build
+    
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.HOSTGATOR_FTP_SERVER }}
+        username: ${{ secrets.HOSTGATOR_FTP_USERNAME }}
+        password: ${{ secrets.HOSTGATOR_FTP_PASSWORD }}
+        local-dir: ./frontend/dist/
+        server-dir: ./public_html/platforma/
+        exclude: |
+          **/.git*
+          **/node_modules/**
+          **/.env
+
+  # ───────────────────────────────────────────────────────────
+  # NOTIFY
+  # ───────────────────────────────────────────────────────────
+  notify-success:
+    needs: [deploy-digitalocean, deploy-aws, deploy-azure, deploy-hostgator]
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+    - name: Send Discord Notification
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: |
+          ✅ **Deployment Successful!**
+          Environment: ${{ github.event.inputs.environment || 'production' }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
+          URL: https://platforma.sarenasfera.com
+
+  notify-failure:
+    needs: [deploy-digitalocean, deploy-aws, deploy-azure, deploy-hostgator]
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+    - name: Send Discord Notification
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: |
+          ❌ **Deployment Failed!**
+          Environment: ${{ github.event.inputs.environment || 'production' }}
+          Commit: ${{ github.sha }}
+          Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

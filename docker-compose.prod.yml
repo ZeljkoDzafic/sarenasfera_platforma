@@ -1,0 +1,341 @@
+# Production Docker Compose — Šarena Sfera Platforma
+# Usage: docker compose -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  # ───────────────────────────────────────────────────────────
+  # FRONTEND (Nuxt 3)
+  # ───────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: sarenasfera-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NUXT_PUBLIC_SUPABASE_URL=${NUXT_PUBLIC_SUPABASE_URL}
+      - NUXT_PUBLIC_SUPABASE_ANON_KEY=${NUXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NUXT_PUBLIC_SITE_URL=https://platforma.sarenasfera.com
+    depends_on:
+      - kong
+    networks:
+      - sarenasfera-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ───────────────────────────────────────────────────────────
+  # API (FastAPI)
+  # ───────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.prod
+    container_name: sarenasfera-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - SUPABASE_URL=http://kong:8000
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - kong
+    networks:
+      - sarenasfera-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ───────────────────────────────────────────────────────────
+  # SUPABASE STACK
+  # ───────────────────────────────────────────────────────────
+  
+  # PostgreSQL Database
+  db:
+    image: supabase/postgres:15.1.0.117
+    container_name: sarenasfera-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d/migrations
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres
+      - JWT_SECRET=${JWT_SECRET}
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=warning
+    networks:
+      - sarenasfera-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # GoTrue (Auth)
+  gotrue:
+    image: supabase/gotrue:v2.158.0
+    container_name: sarenasfera-gotrue
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - GOTRUE_API_HOST=0.0.0.0
+      - GOTRUE_API_PORT=9999
+      - GOTRUE_DB_DRIVER=postgres
+      - GOTRUE_DB_DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres?sslmode=disable
+      - GOTRUE_JWT_SECRET=${JWT_SECRET}
+      - GOTRUE_JWT_EXP=3600
+      - GOTRUE_SITE_URL=https://platforma.sarenasfera.com
+      - GOTRUE_URI_ALLOW_LIST=https://platforma.sarenasfera.com
+      - GOTRUE_MAILER_AUTOCONFIRM=true
+      - GOTRUE_EXTERNAL_EMAIL_ENABLED=true
+    networks:
+      - sarenasfera-network
+
+  # PostgREST
+  postgrest:
+    image: postgrest/postgrest:v12.0.1
+    container_name: sarenasfera-postgrest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - PGRST_DB_URI=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      - PGRST_DB_SCHEMAS=public
+      - PGRST_DB_ANON_ROLE=anon
+      - PGRST_JWT_SECRET=${JWT_SECRET}
+      - PGRST_DB_USE_LEGACY_GUCS=false
+      - PGRST_APP_SETTINGS_JWT_SECRET=${JWT_SECRET}
+    networks:
+      - sarenasfera-network
+
+  # Realtime
+  realtime:
+    image: supabase/realtime:v2.33.55
+    container_name: sarenasfera-realtime
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - PORT=4000
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=postgres
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - sarenasfera-network
+
+  # Storage (S3-compatible)
+  storage:
+    image: supabase/storage-api:v1.0.8
+    container_name: sarenasfera-storage
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - storage-data:/var/lib/storage
+    environment:
+      - ANON_KEY=${NUXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - POSTGREST_URL=http://postgrest:3000
+      - PGRST_JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      - FILE_SIZE_LIMIT=52428800
+      - STORAGE_BACKEND=file
+      - FILE_STORAGE_BACKEND_PATH=/var/lib/storage
+      - TENANT_ID=stub
+      - REGION=stub
+      - GLOBAL_S3_BUCKET=stub
+    networks:
+      - sarenasfera-network
+
+  # Supabase Studio (Admin UI)
+  studio:
+    image: supabase/studio:20240101-8e46f60
+    container_name: sarenasfera-studio
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "3001:3000"
+    environment:
+      - STUDIO_PG_META_URL=http://pgmeta:8080
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DEFAULT_ORGANIZATION_NAME=Šarena Sfera
+      - DEFAULT_PROJECT_NAME=Šarena Sfera Platforma
+      - SUPABASE_URL=http://kong:8000
+      - SUPABASE_PUBLIC_URL=https://platforma.sarenasfera.com
+      - STUDIO_CREDENTIALS_EMAIL=admin@sarenasfera.com
+      - STUDIO_CREDENTIALS_PASSWORD=${ADMIN_PASSWORD}
+    networks:
+      - sarenasfera-network
+
+  # PGMeta
+  pgmeta:
+    image: supabase/postgres-meta:v0.83.2
+    container_name: sarenasfera-pgmeta
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - PG_META_PORT=8080
+      - PG_META_DB_HOST=db
+      - PG_META_DB_PORT=5432
+      - PG_META_DB_NAME=postgres
+      - PG_META_DB_USER=postgres
+      - PG_META_DB_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - sarenasfera-network
+
+  # Kong (API Gateway)
+  kong:
+    image: kong:3.4
+    container_name: sarenasfera-kong
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=db
+      - KONG_PG_PORT=5432
+      - KONG_PG_USER=postgres
+      - KONG_PG_PASSWORD=${POSTGRES_PASSWORD}
+      - KONG_PG_DATABASE=kong
+      - KONG_CASSANDRA_CONTACT_POINTS=
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - KONG_ADMIN_GUI_URL=http://localhost:8002
+      - KONG_DECLARATIVE_CONFIG=/var/lib/kong/kong.yml
+    volumes:
+      - ./docker/kong/kong.yml:/var/lib/kong/kong.yml:ro
+    networks:
+      - sarenasfera-network
+
+  # ───────────────────────────────────────────────────────────
+  # NGINX (Reverse Proxy)
+  # ───────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: sarenasfera-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - ./certs:/etc/letsencrypt:ro
+    depends_on:
+      - frontend
+      - kong
+    networks:
+      - sarenasfera-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ───────────────────────────────────────────────────────────
+  # MONITORING (Optional)
+  # ───────────────────────────────────────────────────────────
+  
+  # Uptime Kuma
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: sarenasfera-uptime
+    restart: unless-stopped
+    ports:
+      - "3005:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - sarenasfera-network
+    profiles:
+      - monitoring
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.3.0
+    container_name: sarenasfera-grafana
+    restart: unless-stopped
+    ports:
+      - "3006:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - sarenasfera-network
+    profiles:
+      - monitoring
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: sarenasfera-prometheus
+    restart: unless-stopped
+    ports:
+      - "3007:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - sarenasfera-network
+    profiles:
+      - monitoring
+
+# ───────────────────────────────────────────────────────────
+# VOLUMES
+# ───────────────────────────────────────────────────────────
+volumes:
+  db-data:
+    driver: local
+  storage-data:
+    driver: local
+  uptime-kuma-data:
+    driver: local
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  certs:
+    driver: local
+
+# ───────────────────────────────────────────────────────────
+# NETWORKS
+# ───────────────────────────────────────────────────────────
+networks:
+  sarenasfera-network:
+    driver: bridge

@@ -27,6 +27,12 @@
       :compare-scores="compareScores"
     />
 
+    <PassportComparison
+      :records="records"
+      :selected-period="selectedPeriod"
+      @update:selected-period="selectedPeriod = $event"
+    />
+
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       <article v-for="domain in domainCards" :key="domain.key" class="card-domain" :class="domain.className">
         <h3 class="font-semibold text-gray-900">{{ domain.label }}</h3>
@@ -57,6 +63,8 @@
 </template>
 
 <script setup lang="ts">
+import PassportComparison from '~/components/portal/PassportComparison.vue'
+
 type DomainKey = 'emotional' | 'social' | 'creative' | 'cognitive' | 'motor' | 'language'
 type PeriodKey = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Godišnje'
 

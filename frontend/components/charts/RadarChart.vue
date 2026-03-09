@@ -44,6 +44,8 @@ const props = defineProps<{
   currentScores: RadarDomainScore[]
   comparePeriodLabel?: string
   compareScores?: RadarDomainScore[]
+  benchmarkPeriodLabel?: string
+  benchmarkScores?: RadarDomainScore[]
 }>()
 
 const domainOrder: DomainKey[] = ['emotional', 'social', 'creative', 'cognitive', 'motor', 'language']
@@ -77,6 +79,15 @@ const datasets = computed(() => {
     })
   }
 
+  if (props.benchmarkScores && props.benchmarkPeriodLabel) {
+    base.push({
+      label: props.benchmarkPeriodLabel,
+      scores: props.benchmarkScores,
+      borderColor: '#00d084',
+      backgroundColor: 'rgba(0, 208, 132, 0.08)',
+    })
+  }
+
   return base
 })
 
@@ -88,6 +99,7 @@ const chartData = computed<ChartData<'radar'>>(() => ({
     borderColor: dataset.borderColor,
     backgroundColor: dataset.backgroundColor,
     borderWidth: 2,
+    borderDash: dataset.label === props.benchmarkPeriodLabel ? [6, 4] : undefined,
     pointRadius: 4,
     pointHoverRadius: 5,
     pointBackgroundColor: '#ffffff',

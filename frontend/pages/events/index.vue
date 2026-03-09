@@ -13,6 +13,18 @@
     <section class="py-12 px-4">
       <div class="max-w-6xl mx-auto">
 
+        <div class="mb-6 flex flex-wrap gap-2">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            class="rounded-xl px-4 py-2 text-sm font-semibold transition-all"
+            :class="activeTab === tab.value ? 'bg-primary-500 text-white shadow-colorful' : 'bg-white text-gray-600 hover:bg-primary-50 border border-gray-200'"
+            @click="activeTab = tab.value"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+
         <!-- Filters -->
         <div class="flex flex-wrap gap-3 mb-8">
           <!-- Age filter -->
@@ -48,13 +60,13 @@
         <!-- Loading state -->
         <div v-if="pending" class="text-center py-16">
           <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p class="text-gray-500">Učitavam radionice...</p>
+          <p class="text-gray-500">Učitavam događaje...</p>
         </div>
 
         <!-- No results -->
         <div v-else-if="filteredEvents.length === 0" class="text-center py-16">
           <p class="text-5xl mb-4">📅</p>
-          <h3 class="font-bold text-xl text-gray-900 mb-2">Nema predstojećih radionica</h3>
+          <h3 class="font-bold text-xl text-gray-900 mb-2">Nema predstojećih događaja</h3>
           <p class="text-gray-600 mb-4">Pratite nas za najave novih termina.</p>
           <NuxtLink to="/contact" class="btn-primary">Obavijestite me o novim terminima</NuxtLink>
         </div>
@@ -70,13 +82,19 @@
             <!-- Domain color bar -->
             <div class="h-2 rounded-t-2xl -mx-6 -mt-6 mb-4" :style="{ backgroundColor: getDomainColor(event.domain) }" />
 
-            <div class="flex items-start justify-between mb-3">
-              <div>
+            <div class="flex items-start justify-between mb-3 gap-3">
+              <div class="flex flex-wrap gap-2">
                 <span
                   class="text-xs font-semibold px-2 py-1 rounded-full"
                   :style="{ backgroundColor: getDomainColor(event.domain) + '20', color: getDomainColor(event.domain) }"
                 >
                   {{ getDomainName(event.domain) }}
+                </span>
+                <span
+                  class="text-xs font-semibold px-2 py-1 rounded-full"
+                  :class="event.contentType === 'webinar' ? 'bg-brand-blue/10 text-brand-blue' : event.contentType === 'event' ? 'bg-brand-amber/10 text-brand-amber' : 'bg-gray-100 text-gray-600'"
+                >
+                  {{ event.typeLabel }}
                 </span>
               </div>
               <span v-if="event.is_free" class="badge-free text-xs">Besplatno</span>
@@ -136,6 +154,14 @@ useSeoMeta({
 
 const filterAge = ref('')
 const filterDomain = ref('')
+const activeTab = ref<'all' | 'workshop' | 'webinar' | 'event'>('all')
+
+const tabs = [
+  { value: 'all', label: 'Sve' },
+  { value: 'workshop', label: 'Radionice' },
+  { value: 'webinar', label: 'Webinari' },
+  { value: 'event', label: 'Događaji' },
+] as const
 
 const domains = [
   { key: 'emotional', name: 'Emocionalni', color: '#cf2e2e' },
@@ -157,18 +183,70 @@ function getDomainName(domain: string): string {
 // Fetch events from Supabase
 const supabase = useSupabase()
 const { data: events, pending } = await useAsyncData('events', async () => {
-  const { data } = await supabase
+  const { data: workshopRows } = await supabase
     .from('events')
     .select('*')
     .eq('is_published', true)
     .eq('is_active', true)
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
-  return data ?? []
+
+  const { data: educationRows } = await supabase
+    .from('educational_content')
+    .select('id, title, slug, description, short_description, domain, age_min, age_max, required_tier, starts_at, ends_at, location_name, location_url, capacity, content_type, event_subtype, external_registration_url')
+    .in('content_type', ['event', 'webinar'])
+    .eq('status', 'published')
+    .order('starts_at', { ascending: true, nullsFirst: false })
+
+  const workshops = (workshopRows ?? []).map((event: Record<string, any>) => ({
+    ...event,
+    contentType: 'workshop',
+    typeLabel: 'Radionica',
+    price_km: event.price_km ?? 0,
+    is_free: Boolean(event.is_free),
+    location: event.location ?? 'Šarena Sfera',
+    starts_at: event.starts_at,
+    ends_at: event.ends_at ?? event.starts_at,
+    capacity: event.capacity ?? 0,
+  }))
+
+  const education = (educationRows ?? []).map((content: Record<string, any>) => ({
+    id: content.id,
+    slug: content.slug,
+    title: content.title,
+    short_desc: content.short_description ?? content.description ?? 'Edukativni sadržaj za roditelje i djecu.',
+    description: content.description ?? '',
+    domain: content.domain ?? 'creative',
+    age_min: content.age_min ?? 2,
+    age_max: content.age_max ?? 6,
+    contentType: content.content_type,
+    typeLabel: content.content_type === 'webinar'
+      ? 'Webinar'
+      : content.event_subtype === 'workshop'
+        ? 'Radionica'
+        : content.event_subtype === 'open_day'
+          ? 'Open day'
+          : 'Događaj',
+    is_free: content.required_tier === 'free',
+    price_km: content.required_tier === 'paid' ? 15 : content.required_tier === 'premium' ? 30 : 0,
+    location: content.content_type === 'webinar'
+      ? (content.location_name || content.location_url || 'Online pristup')
+      : (content.location_name || 'Detalji lokacije po prijavi'),
+    location_url: content.location_url ?? content.external_registration_url ?? null,
+    starts_at: content.starts_at,
+    ends_at: content.ends_at ?? content.starts_at,
+    capacity: content.capacity ?? 0,
+  }))
+
+  return [...workshops, ...education]
 })
 
 const filteredEvents = computed(() => {
   let list = events.value ?? []
+
+  if (activeTab.value !== 'all') {
+    list = list.filter((e: Record<string, unknown>) => e.contentType === activeTab.value)
+  }
 
   if (filterDomain.value) {
     list = list.filter((e: Record<string, unknown>) => e.domain === filterDomain.value)
@@ -186,11 +264,13 @@ const filteredEvents = computed(() => {
   return list
 })
 
-function formatDate(iso: string): string {
+function formatDate(iso?: string): string {
+  if (!iso) return 'Termin uskoro'
   return new Date(iso).toLocaleDateString('bs-BA', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
-function formatTime(iso: string): string {
+function formatTime(iso?: string): string {
+  if (!iso) return 'TBD'
   return new Date(iso).toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit' })
 }
 </script>

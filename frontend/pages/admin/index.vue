@@ -149,6 +149,8 @@ const quickActions = [
   { label: 'Novi događaj', icon: '📅', to: '/admin/events/new' },
   { label: 'Opservacija', icon: '📝', to: '/admin/observations' },
   { label: 'Pošalji poruku', icon: '💬', to: '/admin/messages' },
+  { label: 'Parent review', icon: '👀', to: '/admin/parent-observations' },
+  { label: 'Edukacija', icon: '🎓', to: '/admin/education' },
 ]
 
 onMounted(async () => {

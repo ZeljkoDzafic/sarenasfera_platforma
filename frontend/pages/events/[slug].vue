@@ -11,12 +11,15 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            Sve radionice
+            Svi događaji
           </NuxtLink>
 
           <div class="flex items-center gap-3 mb-4">
             <span class="bg-white/20 text-white text-sm font-semibold px-3 py-1 rounded-full">
               {{ domainName }}
+            </span>
+            <span class="bg-white/20 text-white text-sm font-semibold px-3 py-1 rounded-full">
+              {{ event.typeLabel }}
             </span>
             <span v-if="event.is_free" class="bg-brand-green/80 text-white text-sm font-semibold px-3 py-1 rounded-full">
               Besplatno
@@ -50,12 +53,12 @@
           <!-- Main content -->
           <div class="lg:col-span-2 space-y-6">
             <div class="card">
-              <h2 class="font-display font-bold text-xl text-gray-900 mb-4">O radionici</h2>
+              <h2 class="font-display font-bold text-xl text-gray-900 mb-4">O sadržaju</h2>
               <p class="text-gray-700 leading-relaxed">{{ event.description }}</p>
             </div>
 
             <div class="card">
-              <h2 class="font-display font-bold text-xl text-gray-900 mb-4">Lokacija</h2>
+              <h2 class="font-display font-bold text-xl text-gray-900 mb-4">{{ event.contentType === 'webinar' ? 'Pristup' : 'Lokacija' }}</h2>
               <div class="flex items-start gap-3">
                 <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
                   <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,50 +78,76 @@
           <!-- Registration Card -->
           <div class="lg:col-span-1">
             <div class="card sticky top-6">
-              <h2 class="font-display font-bold text-xl text-gray-900 mb-2">Prijavite dijete</h2>
-              <p class="text-gray-500 text-sm mb-4">Popunite formu i mi ćemo vas kontaktirati za potvrdu.</p>
+              <template v-if="event.isLegacy">
+                <h2 class="font-display font-bold text-xl text-gray-900 mb-2">Prijavite dijete</h2>
+                <p class="text-gray-500 text-sm mb-4">Popunite formu i mi ćemo vas kontaktirati za potvrdu.</p>
 
-              <div v-if="registrationSuccess" class="text-center py-6">
-                <div class="w-14 h-14 rounded-full bg-brand-green/10 flex items-center justify-center mx-auto mb-3">
-                  <svg class="w-7 h-7 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 class="font-bold text-gray-900 mb-1">Prijava primljena!</h3>
-                <p class="text-sm text-gray-600">Kontaktiraćemo vas uskoro za potvrdu.</p>
-              </div>
-
-              <form v-else class="space-y-3" @submit.prevent="register">
-                <div>
-                  <label class="label text-xs">Ime roditelja *</label>
-                  <input v-model="regForm.parent_name" type="text" class="input text-sm" placeholder="Ime i prezime" required />
-                </div>
-                <div>
-                  <label class="label text-xs">Email *</label>
-                  <input v-model="regForm.parent_email" type="email" class="input text-sm" placeholder="vas@email.com" required />
-                </div>
-                <div>
-                  <label class="label text-xs">Telefon</label>
-                  <input v-model="regForm.parent_phone" type="tel" class="input text-sm" placeholder="+387 61..." />
-                </div>
-                <div>
-                  <label class="label text-xs">Ime djeteta *</label>
-                  <input v-model="regForm.child_name" type="text" class="input text-sm" placeholder="Ime djeteta" required />
-                </div>
-                <div>
-                  <label class="label text-xs">Datum rođenja</label>
-                  <input v-model="regForm.child_dob" type="date" class="input text-sm" />
-                </div>
-                <div>
-                  <label class="label text-xs">Napomena</label>
-                  <textarea v-model="regForm.notes" class="input text-sm" rows="2" placeholder="Alergije, posebne potrebe..." />
+                <div v-if="registrationSuccess" class="text-center py-6">
+                  <div class="w-14 h-14 rounded-full bg-brand-green/10 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 class="font-bold text-gray-900 mb-1">Prijava primljena!</h3>
+                  <p class="text-sm text-gray-600">Kontaktiraćemo vas uskoro za potvrdu.</p>
                 </div>
 
-                <button type="submit" class="btn-primary w-full" :disabled="regLoading">
-                  {{ regLoading ? 'Šalje...' : 'Prijavi dijete' }}
-                </button>
-                <p v-if="regError" class="text-brand-red text-xs text-center">{{ regError }}</p>
-              </form>
+                <form v-else class="space-y-3" @submit.prevent="register">
+                  <div>
+                    <label class="label text-xs">Ime roditelja *</label>
+                    <input v-model="regForm.parent_name" type="text" class="input text-sm" placeholder="Ime i prezime" required />
+                  </div>
+                  <div>
+                    <label class="label text-xs">Email *</label>
+                    <input v-model="regForm.parent_email" type="email" class="input text-sm" placeholder="vas@email.com" required />
+                  </div>
+                  <div>
+                    <label class="label text-xs">Telefon</label>
+                    <input v-model="regForm.parent_phone" type="tel" class="input text-sm" placeholder="+387 61..." />
+                  </div>
+                  <div>
+                    <label class="label text-xs">Ime djeteta *</label>
+                    <input v-model="regForm.child_name" type="text" class="input text-sm" placeholder="Ime djeteta" required />
+                  </div>
+                  <div>
+                    <label class="label text-xs">Datum rođenja</label>
+                    <input v-model="regForm.child_dob" type="date" class="input text-sm" />
+                  </div>
+                  <div>
+                    <label class="label text-xs">Napomena</label>
+                    <textarea v-model="regForm.notes" class="input text-sm" rows="2" placeholder="Alergije, posebne potrebe..." />
+                  </div>
+
+                  <button type="submit" class="btn-primary w-full" :disabled="regLoading">
+                    {{ regLoading ? 'Šalje...' : 'Prijavi dijete' }}
+                  </button>
+                  <p v-if="regError" class="text-brand-red text-xs text-center">{{ regError }}</p>
+                </form>
+              </template>
+
+              <template v-else>
+                <h2 class="font-display font-bold text-xl text-gray-900 mb-2">
+                  {{ event.contentType === 'webinar' ? 'Pristup webinaru' : 'Registracija za događaj' }}
+                </h2>
+                <p class="text-gray-500 text-sm mb-4">
+                  Ovaj sadržaj koristi novi education model. Za registraciju i pristup koristite portal nakon prijave.
+                </p>
+
+                <div class="space-y-3">
+                  <a
+                    v-if="event.external_registration_url"
+                    :href="event.external_registration_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-primary w-full text-center"
+                  >
+                    Registruj se
+                  </a>
+                  <NuxtLink to="/auth/register" class="btn-primary w-full text-center">Kreiraj nalog</NuxtLink>
+                  <NuxtLink to="/auth/login" class="btn-secondary w-full text-center">Prijavi se</NuxtLink>
+                  <NuxtLink to="/portal/education/events" class="btn-ghost w-full text-center">Idi na moje događaje</NuxtLink>
+                </div>
+              </template>
 
               <div class="mt-4 pt-4 border-t border-gray-100 text-center">
                 <p class="text-xs text-gray-400">
@@ -135,8 +164,8 @@
     <!-- 404 -->
     <div v-else class="py-24 text-center">
       <p class="text-6xl mb-4">📅</p>
-      <h2 class="font-display font-bold text-2xl text-gray-900 mb-3">Radionica nije pronađena</h2>
-      <NuxtLink to="/events" class="btn-primary">Sve radionice</NuxtLink>
+      <h2 class="font-display font-bold text-2xl text-gray-900 mb-3">Događaj nije pronađen</h2>
+      <NuxtLink to="/events" class="btn-primary">Svi događaji</NuxtLink>
     </div>
   </div>
 </template>
@@ -153,8 +182,55 @@ const { data: event } = await useAsyncData(`event-${slug}`, async () => {
     .select('*')
     .eq('slug', slug)
     .eq('is_published', true)
-    .single()
-  return data
+    .maybeSingle()
+
+  if (data) {
+    return {
+      ...data,
+      isLegacy: true,
+      contentType: 'workshop',
+      typeLabel: 'Radionica',
+    }
+  }
+
+  const { data: content } = await supabase
+    .from('educational_content')
+    .select('id, title, slug, description, short_description, domain, age_min, age_max, required_tier, starts_at, ends_at, content_type, location_name, location_url, capacity, event_subtype, external_registration_url')
+    .eq('slug', slug)
+    .in('content_type', ['event', 'webinar'])
+    .eq('status', 'published')
+    .maybeSingle()
+
+  if (!content) return null
+
+  return {
+    id: content.id,
+    title: content.title,
+    slug: content.slug,
+    short_desc: content.short_description ?? content.description ?? '',
+    description: content.description ?? '',
+    domain: content.domain ?? 'creative',
+    age_min: content.age_min ?? 2,
+    age_max: content.age_max ?? 6,
+    starts_at: content.starts_at,
+    ends_at: content.ends_at ?? content.starts_at,
+    capacity: content.capacity ?? 0,
+    location: content.content_type === 'webinar'
+      ? (content.location_name || content.location_url || 'Online pristup nakon prijave')
+      : (content.location_name || 'Lokacija se potvrđuje kroz portal'),
+    location_url: content.location_url ?? null,
+    external_registration_url: content.external_registration_url ?? null,
+    is_free: content.required_tier === 'free',
+    contentType: content.content_type,
+    typeLabel: content.content_type === 'webinar'
+      ? 'Webinar'
+      : content.event_subtype === 'workshop'
+        ? 'Radionica'
+        : content.event_subtype === 'open_day'
+          ? 'Open day'
+          : 'Događaj',
+    isLegacy: false,
+  }
 })
 
 const domains: Record<string, { name: string; color: string }> = {
@@ -217,11 +293,13 @@ async function register() {
   }
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso?: string): string {
+  if (!iso) return 'Termin uskoro'
   return new Date(iso).toLocaleDateString('bs-BA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-function formatTime(iso: string): string {
+function formatTime(iso?: string): string {
+  if (!iso) return 'TBD'
   return new Date(iso).toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit' })
 }
 </script>

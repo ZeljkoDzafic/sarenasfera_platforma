@@ -115,6 +115,50 @@
               <label class="label">Datum opservacije</label>
               <input v-model="form.observed_at" type="date" class="input" />
             </div>
+            <div v-if="availableMilestones.length > 0" class="space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <label class="label">Miljokazi za brzo označavanje</label>
+                  <p class="text-xs text-gray-500">Prikazujemo miljokaze za odabranu domenu i procijenjeni uzrast djeteta.</p>
+                </div>
+                <span class="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
+                  {{ availableMilestones.length }}
+                </span>
+              </div>
+
+              <div class="space-y-2 rounded-2xl bg-gray-50 p-3">
+                <div
+                  v-for="milestone in availableMilestones"
+                  :key="milestone.id"
+                  class="rounded-2xl border border-gray-200 bg-white p-3"
+                >
+                  <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-gray-900">{{ milestone.title }}</p>
+                      <p v-if="milestone.description" class="mt-1 text-xs text-gray-500">{{ milestone.description }}</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        class="rounded-xl px-3 py-2 text-xs font-semibold transition-all"
+                        :class="milestoneSelections[milestone.id] === 'emerging' ? 'bg-brand-amber/15 text-brand-amber ring-2 ring-brand-amber/30' : 'bg-gray-100 text-gray-600 hover:bg-brand-amber/10'"
+                        @click="toggleMilestoneSelection(milestone.id, 'emerging')"
+                      >
+                        U nastajanju
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded-xl px-3 py-2 text-xs font-semibold transition-all"
+                        :class="milestoneSelections[milestone.id] === 'achieved' ? 'bg-brand-green/15 text-brand-green ring-2 ring-brand-green/30' : 'bg-gray-100 text-gray-600 hover:bg-brand-green/10'"
+                        @click="toggleMilestoneSelection(milestone.id, 'achieved')"
+                      >
+                        Postignuto
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="flex items-center gap-2">
               <input type="checkbox" id="highlight" v-model="form.is_highlight" class="rounded" />
               <label for="highlight" class="text-sm font-semibold text-gray-700 cursor-pointer">⭐ Istakni ovu opservaciju</label>
@@ -137,6 +181,7 @@ definePageMeta({ middleware: ['auth', 'role'], layout: 'admin' })
 useSeoMeta({ title: 'Opservacije — Admin' })
 
 const supabase = useSupabase()
+const { user } = useAuth()
 const showCreate = ref(false)
 const creating = ref(false)
 
@@ -151,6 +196,7 @@ const form = reactive({
   observed_at: new Date().toISOString().slice(0, 10),
   is_highlight: false,
 })
+const milestoneSelections = reactive<Record<string, 'emerging' | 'achieved' | undefined>>({})
 
 const domainList = [
   { key: 'emotional', label: 'Emocionalni', emoji: '❤️', color: '#cf2e2e' },
@@ -168,12 +214,26 @@ function getDomainEmoji(d: string): string { return domainEmojis[d] ?? '🎨' }
 function getDomainLabel(d: string): string { return domainLabels[d] ?? d }
 
 const { data: children } = await useAsyncData('admin-obs-children', async () => {
-  const { data } = await supabase.from('children').select('id, full_name').eq('is_active', true).order('full_name')
+  const { data } = await supabase
+    .from('children')
+    .select('id, full_name, date_of_birth')
+    .eq('is_active', true)
+    .order('full_name')
   return data ?? []
 })
 
 const { data: groups } = await useAsyncData('admin-obs-groups', async () => {
   const { data } = await supabase.from('groups').select('id, name').eq('is_active', true).order('name')
+  return data ?? []
+})
+
+const { data: milestoneCatalog } = await useAsyncData('admin-obs-milestones', async () => {
+  const { data } = await supabase
+    .from('developmental_milestones')
+    .select('id, domain, age_range_min, age_range_max, title, description, sort_order')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
   return data ?? []
 })
 
@@ -193,20 +253,97 @@ const { data: observations, pending, refresh } = await useAsyncData('admin-obser
 
 watch([filterChild, filterDomain, filterGroup], () => refresh())
 
+const selectedChild = computed(() => {
+  return (children.value ?? []).find((child: Record<string, any>) => child.id === form.child_id) ?? null
+})
+
+const selectedChildAgeMonths = computed(() => {
+  const dob = selectedChild.value?.date_of_birth
+  if (!dob) return null
+
+  const birthDate = new Date(dob)
+  const today = new Date()
+  let months = (today.getFullYear() - birthDate.getFullYear()) * 12
+  months += today.getMonth() - birthDate.getMonth()
+  if (today.getDate() < birthDate.getDate()) months -= 1
+  return Math.max(months, 0)
+})
+
+const availableMilestones = computed(() => {
+  if (!form.child_id || !form.domain || selectedChildAgeMonths.value === null) return []
+
+  return (milestoneCatalog.value ?? []).filter((milestone: Record<string, any>) => {
+    return milestone.domain === form.domain
+      && milestone.age_range_min <= selectedChildAgeMonths.value
+      && milestone.age_range_max >= selectedChildAgeMonths.value
+  })
+})
+
+watch(() => [form.child_id, form.domain], () => {
+  for (const key of Object.keys(milestoneSelections)) {
+    delete milestoneSelections[key]
+  }
+}, { deep: true })
+
+function toggleMilestoneSelection(milestoneId: string, status: 'emerging' | 'achieved') {
+  milestoneSelections[milestoneId] = milestoneSelections[milestoneId] === status ? undefined : status
+}
+
 async function createObs() {
   if (!form.child_id || !form.domain || !form.content) return
   creating.value = true
-  await supabase.from('observations').insert({
-    child_id: form.child_id,
-    domain: form.domain,
-    content: form.content,
-    observed_at: form.observed_at || null,
-    is_highlight: form.is_highlight,
-  })
-  showCreate.value = false
-  creating.value = false
-  Object.assign(form, { child_id: '', domain: '', content: '', is_highlight: false })
-  await refresh()
+  try {
+    const { data: observation, error: observationError } = await supabase
+      .from('observations')
+      .insert({
+        child_id: form.child_id,
+        domain: form.domain,
+        content: form.content,
+        observed_at: form.observed_at || null,
+        is_highlight: form.is_highlight,
+      })
+      .select('id')
+      .single()
+
+    if (observationError) throw observationError
+
+    const selectedMilestones = Object.entries(milestoneSelections)
+      .filter(([, status]) => Boolean(status))
+      .map(([milestoneId, status]) => ({
+        child_id: form.child_id,
+        milestone_id: milestoneId,
+        status,
+        achieved_at: status === 'achieved' ? (form.observed_at || new Date().toISOString().slice(0, 10)) : null,
+        observed_by: user.value?.id ?? null,
+        observation_id: observation.id,
+        notes: form.content,
+      }))
+
+    if (selectedMilestones.length > 0) {
+      const { error: milestoneError } = await supabase
+        .from('child_milestones')
+        .upsert(selectedMilestones, {
+          onConflict: 'child_id,milestone_id',
+        })
+
+      if (milestoneError) throw milestoneError
+    }
+
+    showCreate.value = false
+    Object.assign(form, {
+      child_id: '',
+      domain: '',
+      content: '',
+      observed_at: new Date().toISOString().slice(0, 10),
+      is_highlight: false,
+    })
+    for (const key of Object.keys(milestoneSelections)) {
+      delete milestoneSelections[key]
+    }
+    await refresh()
+  } finally {
+    creating.value = false
+  }
 }
 
 async function deleteObs(id: string) {
