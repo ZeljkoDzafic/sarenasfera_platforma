@@ -248,6 +248,7 @@
   - Print-friendly view
 - **Output:** Passport components + RadarChart
 
+### T-304: Workshop Calendar ✅ DONE (Codex)
 ### ✅ T-304: Workshop Calendar — DONE (Claude + Codex)
 - **Depends on:** T-300
 - **Agent scope:** Workshop schedule and materials
@@ -261,6 +262,7 @@
   - Past workshops with attendance status
 - **Output:** `pages/portal/workshops.vue`, calendar components
 
+### T-305: Home Activities ✅ DONE (Codex)
 ### T-305: Home Activities
 - **Status:** ✅ DONE (Claude — `pages/portal/activities.vue`)
 - **Depends on:** T-300
