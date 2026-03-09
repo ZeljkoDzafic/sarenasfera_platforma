@@ -1,372 +1,106 @@
-# Production Readiness Checklist — Šarena Sfera Platforma
+# Production Readiness
 
-**Version:** 1.0  
-**Last Updated:** 2026-03-09  
-**Status:** 🟡 In Progress
+Last updated: 2026-03-09
+Status: Not yet production-ready
 
----
+This document is the launch gate, not a motivational summary. If this file, [SECURITY-REVIEW.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/SECURITY-REVIEW.md), and [PROJECT-STATUS.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/PROJECT-STATUS.md) disagree, trust the more conservative statement.
 
-## 📋 Sadržaj
+## Current Truth
 
-1. [Security Checklist](#security-checklist)
-2. [Code Quality Checklist](#code-quality-checklist)
-3. [Performance Checklist](#performance-checklist)
-4. [Documentation Checklist](#documentation-checklist)
-5. [Monitoring & Logging](#monitoring--logging)
-6. [Backup & Recovery](#backup--recovery)
-7. [Environment Configuration](#environment-configuration)
-8. [Pre-Launch Checklist](#pre-launch-checklist)
+The repo now contains meaningful production scaffolding:
+
+- local setup and config verification scripts
+- production Dockerfiles for frontend and API
+- production compose path with Kong and nginx wiring
+- internal protection for FastAPI email endpoints
+- frontend sanitization for rich educational content
+- deployment and verification documentation
+
+That is not enough for launch sign-off.
+
+The platform must still be treated as not ready for production traffic until the blocking verification work is completed and recorded.
 
 ## Canonical Verification Docs
 
-- [Security Review](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/SECURITY-REVIEW.md)
-- [Database RLS Verification](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/DATABASE-RLS-VERIFICATION.md)
-- [Auth E2E Checklist](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/AUTH-E2E-CHECKLIST.md)
-- [Deployment Runbook](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/DEPLOYMENT-RUNBOOK.md)
-
----
-
-## 🔒 Security Checklist
-
-### Critical (Must Have Before Launch)
-
-- [ ] **RLS Policies Verified**
-  - [ ] All tables have RLS enabled
-  - [ ] Policies tested for all user roles (parent, staff, admin, expert)
-  - [ ] No bypass vulnerabilities in security definer functions
-  - [ ] Service role keys not exposed in frontend code
-
-- [ ] **Authentication & Authorization**
-  - [ ] Password requirements enforced (min 8 chars)
-  - [ ] Session timeout configured
-  - [ ] JWT expiration set appropriately
-  - [ ] Role-based access control implemented
-  - [ ] Admin routes protected with middleware
-
-- [ ] **Input Validation**
-  - [ ] All forms have client-side validation
-  - [ ] Server-side validation for all API endpoints
-  - [ ] SQL injection prevention (parameterized queries)
-  - [ ] XSS prevention (escape user input)
-  - [ ] CSRF protection enabled
-
-- [ ] **Data Protection**
-  - [ ] HTTPS enforced (HSTS header)
-  - [ ] Sensitive data encrypted at rest
-  - [ ] PII (personal identifiable information) protected
-  - [ ] Children's data extra protected (COPPA compliance)
-  - [ ] No sensitive data in logs
-
-- [ ] **File Uploads**
-  - [ ] File type validation (whitelist, not blacklist)
-  - [ ] File size limits enforced
-  - [ ] Uploaded files scanned for malware
-  - [ ] Files stored outside web root
-  - [ ] Access control on file downloads
-
-- [ ] **Rate Limiting**
-  - [ ] API rate limiting configured
-  - [ ] Login attempt limiting
-  - [ ] Form submission limiting
-  - [ ] DDoS protection (Cloudflare)
-
-### High Priority (Should Have)
-
-- [ ] **Security Headers**
-  ```nginx
-  add_header X-Frame-Options "SAMEORIGIN" always;
-  add_header X-Content-Type-Options "nosniff" always;
-  add_header X-XSS-Protection "1; mode=block" always;
-  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-  add_header Content-Security-Policy "default-src 'self' ...";
-  ```
-
-- [ ] **Audit Logging**
-  - [ ] Login/logout events logged
-  - [ ] Admin actions logged
-  - [ ] Data access logged
-  - [ ] Failed auth attempts logged
-
-- [ ] **Secrets Management**
-  - [ ] No hardcoded secrets in code
-  - [ ] Environment variables for all secrets
-  - [ ] Secrets rotated regularly
-  - [ ] Different secrets per environment
-
-### Medium Priority (Nice to Have)
-
-- [ ] Security scanning in CI/CD
-- [ ] Penetration testing
-- [ ] Bug bounty program
-- [ ] Regular security audits
-
----
-
-## 💻 Code Quality Checklist
-
-### Critical
-
-- [ ] **TypeScript**
-  - [ ] No `any` types in critical code paths
-  - [ ] All props and emits typed
-  - [ ] Database types generated from schema
-  - [ ] Strict mode enabled in tsconfig
-
-- [ ] **Error Handling**
-  - [ ] All async operations have try/catch
-  - [ ] User-friendly error messages
-  - [ ] Errors logged with context
-  - [ ] Graceful degradation
-
-- [ ] **Loading States**
-  - [ ] All async operations show loading state
-  - [ ] Skeleton screens for better UX
-  - [ ] No infinite loading loops
-
-- [ ] **Empty States**
-  - [ ] All lists have empty state handling
-  - [ ] Clear CTAs in empty states
-  - [ ] No broken UI when data is missing
-
-### High Priority
-
-- [ ] **Code Organization**
-  - [ ] Components < 300 lines
-  - [ ] Composables for reusable logic
-  - [ ] Consistent naming conventions
-  - [ ] No circular dependencies
-
-- [ ] **Testing**
-  - [ ] Critical paths have E2E tests
-  - [ ] Composables have unit tests
-  - [ ] Test coverage > 70%
-  - [ ] Tests run in CI/CD
-
----
+Run and update these before any launch decision:
 
-## ⚡ Performance Checklist
+1. [SECURITY-REVIEW.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/SECURITY-REVIEW.md)
+2. [AUTH-E2E-CHECKLIST.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/AUTH-E2E-CHECKLIST.md)
+3. [DATABASE-RLS-VERIFICATION.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/DATABASE-RLS-VERIFICATION.md)
+4. [DEPLOYMENT-RUNBOOK.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/DEPLOYMENT-RUNBOOK.md)
+5. [PRODUCTION-DEPLOYMENT.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/PRODUCTION-DEPLOYMENT.md)
+6. [PRODUCTION-STATUS.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/PRODUCTION-STATUS.md)
 
-### Critical
+## Release Gate
 
-- [ ] **Frontend**
-  - [ ] Lighthouse score > 90
-  - [ ] First Contentful Paint < 1.5s
-  - [ ] Time to Interactive < 3.5s
-  - [ ] Cumulative Layout Shift < 0.1
-  - [ ] Images optimized (WebP, lazy loading)
+All items below must be true before the status can change to production-ready.
 
-- [ ] **Backend**
-  - [ ] Database queries optimized (EXPLAIN ANALYZE)
-  - [ ] N+1 queries eliminated
-  - [ ] Indexes on frequently queried columns
-  - [ ] Connection pooling configured
-
-- [ ] **Caching**
-  - [ ] Static assets cached (1 year)
-  - [ ] API responses cached where appropriate
-  - [ ] CDN for static assets
-  - [ ] Database query caching
+### 1. Access control is verified
 
-### High Priority
-
-- [ ] Bundle size < 500KB (gzipped)
-- [ ] Code splitting implemented
-- [ ] Tree shaking enabled
-- [ ] Database connection limits set
+- auth registration, verification, login, logout, forgot-password, and reset-password all pass on a clean stack
+- role redirects are verified for parent, staff, and admin
+- no privileged frontend path is accessible without correct auth state
 
----
+### 2. Database access rules are verified
 
-## 📚 Documentation Checklist
+- critical tables are tested role-by-role with real users
+- parent access is limited to own children and related records
+- staff access is limited to assigned operational scope
+- admin access is confirmed where intended
+- expert read-only boundaries are confirmed where intended
 
-### Critical
+### 3. Production packaging is field-proven
 
-- [ ] **Deployment Documentation**
-  - [ ] Step-by-step deployment guide
-  - [ ] Rollback procedures
-  - [ ] Environment setup guide
-  - [ ] Troubleshooting guide
+- `npm run verify:config` passes
+- production images build successfully
+- production compose boots on a real target host
+- nginx starts with real certificate mounts
+- Kong routes auth, REST, storage, and frontend traffic correctly
+- rollback steps are exercised, not just documented
 
-- [ ] **API Documentation**
-  - [ ] All endpoints documented
-  - [ ] Request/response examples
-  - [ ] Error codes documented
-  - [ ] Rate limits documented
+### 4. Frontend and API verification is recorded
 
-- [ ] **Database Documentation**
-  - [ ] Schema diagram
-  - [ ] Table descriptions
-  - [ ] RLS policies documented
-  - [ ] Migration procedures
+- `cd frontend && npm ci` passes
+- `cd frontend && npm run typecheck` passes
+- production build completes successfully
+- API startup and health checks pass with production-like env values
 
-### High Priority
+### 5. Operational safety exists
 
-- [ ] User manual for admin panel
-- [ ] User manual for parent portal
-- [ ] Architecture decision records (ADRs)
-- [ ] Runbooks for common issues
+- backups and restore steps are documented and exercised
+- monitoring and alerting are configured for the first release
+- secrets are real, non-placeholder, and stored outside the repo
+- known placeholder or synthetic admin data is removed or clearly isolated
 
----
+## What Is Implemented But Not Yet Sign-Off
 
-## 📊 Monitoring & Logging
+These are meaningful improvements, but they are not launch proof on their own:
 
-### Critical
+- production env templates
+- compose-based deployment path
+- Kong declarative config
+- internal API key protection
+- HTML sanitization on selected rich-content routes
+- education seed data
+- production-oriented docs and runbooks
 
-- [ ] **Uptime Monitoring**
-  - [ ] Main website monitored
-  - [ ] API endpoints monitored
-  - [ ] Database health monitored
-  - [ ] Alerts configured (email, SMS, Discord)
+## Fastest Honest Path To Launch
 
-- [ ] **Error Tracking**
-  - [ ] Frontend errors tracked (Sentry)
-  - [ ] Backend errors tracked
-  - [ ] Database errors logged
-  - [ ] Error budgets defined
+1. Install dependencies on a clean machine and rerun frontend checks.
+2. Run the auth E2E checklist and record exact pass/fail results.
+3. Run the RLS verification checklist and record exact pass/fail results.
+4. Boot the production compose stack on a real host with real certs and secrets.
+5. Execute one rollback drill and one restore drill.
+6. Update this file and [PRODUCTION-STATUS.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/PRODUCTION-STATUS.md) with evidence, not intention.
 
-- [ ] **Performance Monitoring**
-  - [ ] Response times tracked
-  - [ ] Database query times tracked
-  - [ ] Page load times tracked
-  - [ ] Slow query logging enabled
+## Sign-Off Rule
 
-### High Priority
+Do not mark this project as `production-ready`, `ready for launch`, or equivalent unless:
 
-- [ ] Business metrics tracked
-  - [ ] User registrations
-  - [ ] Active users (DAU/MAU)
-  - [ ] Workshop attendance
-  - [ ] Conversion rates
+- the release gate items above are complete
+- the linked verification docs contain recorded outcomes
+- the statement is consistent with [SECURITY-REVIEW.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/SECURITY-REVIEW.md)
 
-- [ ] Log aggregation (ELK stack, Grafana)
-- [ ] Distributed tracing
+Until then, the correct public status is:
 
----
-
-## 💾 Backup & Recovery
-
-### Critical
-
-- [ ] **Database Backups**
-  - [ ] Daily automated backups
-  - [ ] Backups tested monthly
-  - [ ] Point-in-time recovery enabled
-  - [ ] Backup retention: 30 days minimum
-
-- [ ] **File Backups**
-  - [ ] User uploads backed up
-  - [ ] Configuration files backed up
-  - [ ] Backup encryption enabled
-
-- [ ] **Recovery Procedures**
-  - [ ] Documented recovery steps
-  - [ ] Recovery time objective (RTO) < 4 hours
-  - [ ] Recovery point objective (RPO) < 24 hours
-  - [ ] Recovery tested quarterly
-
-### High Priority
-
-- [ ] Off-site backups (different region)
-- [ ] Backup monitoring and alerts
-- [ ] Automated backup verification
-
----
-
-## 🔧 Environment Configuration
-
-### Critical
-
-- [ ] **Production Environment**
-  - [ ] Separate from staging/development
-  - [ ] Environment variables validated
-  - [ ] Debug mode disabled
-  - [ ] Error reporting to users disabled
-
-- [ ] **Database**
-  - [ ] Production database sized appropriately
-  - [ ] Connection limits configured
-  - [ ] Slow query log enabled
-  - [ ] Autovacuum tuned
-
-- [ ] **Application**
-  - [ ] NODE_ENV=production
-  - [ ] Log level: warn or error
-  - [ ] Source maps not exposed
-  - [ ] Compression enabled
-
-### High Priority
-
-- [ ] Staging environment mirrors production
-- [ ] Blue-green or canary deployments
-- [ ] Feature flags for gradual rollout
-
----
-
-## 🚀 Pre-Launch Checklist
-
-### 1 Week Before Launch
-
-- [ ] Security audit completed
-- [ ] Load testing completed (target: 1000 concurrent users)
-- [ ] All critical bugs fixed
-- [ ] Documentation reviewed
-- [ ] Team trained on support procedures
-
-### 1 Day Before Launch
-
-- [ ] Final backup taken
-- [ ] DNS configured (but not switched)
-- [ ] SSL certificates installed
-- [ ] Monitoring dashboards ready
-- [ ] On-call schedule confirmed
-
-### Launch Day
-
-- [ ] Deploy to production
-- [ ] Verify all health checks pass
-- [ ] Switch DNS
-- [ ] Monitor error rates
-- [ ] Monitor performance metrics
-- [ ] Test critical user flows
-
-### Post-Launch (First Week)
-
-- [ ] Daily check-ins on metrics
-- [ ] User feedback collected
-- [ ] Critical bugs fixed within 24h
-- [ ] Performance baseline established
-
----
-
-## 📝 Sign-Off
-
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Tech Lead | | | |
-| Security Officer | | | |
-| DevOps | | | |
-| Product Owner | | | |
-
----
-
-## 🎯 Next Steps
-
-1. **Immediate (This Week)**
-   - Complete security hardening
-   - Set up monitoring
-   - Document rollback procedures
-
-2. **Short-term (Next 2 Weeks)**
-   - Load testing
-   - Documentation completion
-   - Team training
-
-3. **Long-term (Next Month)**
-   - Penetration testing
-   - Performance optimization
-   - Backup testing
-
----
-
-**Last Security Review:** TBD  
-**Last Performance Audit:** TBD  
-**Next Review Date:** TBD
+`Not yet production-ready. Strong scaffolding exists, but launch blockers remain.`

@@ -29,10 +29,10 @@ The repo already contains:
 
 The repo does not yet fully contain:
 
-- auth UI pages
-- production-grade FastAPI services
-- complete deployment automation
-- verified production-hardening across auth, RLS, backups, and monitoring
+- verified end-to-end auth flow
+- verified table-by-table RLS coverage
+- field-proven production rollout with real certs and secrets
+- complete production hardening across monitoring, backups, and restore drills
 
 ## Goal
 

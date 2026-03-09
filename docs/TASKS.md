@@ -627,12 +627,12 @@ When updating this file, prefer accuracy over optimism.
 - **Depends on:** T-702
 - **Agent scope:** Production deployment
 - **Acceptance criteria:**
-  - Deploy script: `scripts/deploy.sh`
+  - One canonical production deployment path is documented and executable
   - DNS configuration documented
   - SSL certificates (auto-renewal)
   - Smoke tests pass on production
   - Monitoring set up (UptimeRobot)
-- **Output:** `scripts/deploy.sh`, deployment docs
+- **Output:** deployment docs, production compose workflow
 
 ---
 
@@ -1364,7 +1364,7 @@ WEEK 15: T-702, T-703 (production deploy)
 
 ### 🤖 QWEN — Growth features, Edukacioni sadržaj, Portal napredne funkcije
 **Status:** ✅ SVE ZAVRŠENO
-**Završeno:** T-901, T-902, T-903, T-904, T-905, T-906, T-907, T-908, T-1002, T-1010 (sa Claude), T-1011 (sa Claude), T-1012 (sa Claude), T-1013 (sa Claude), Multi-cloud deployment
+**Završeno:** T-901, T-902, T-903, T-904, T-905, T-906, T-907, T-908, T-1002, T-1010 (sa Claude), T-1011 (sa Claude), T-1012 (sa Claude), T-1013 (sa Claude)
 
 **Završeni taskovi (Qwen):**
 
@@ -1418,14 +1418,10 @@ WEEK 15: T-702, T-703 (production deploy)
   - Claude: `pages/resources.vue` — public resources
   - Qwen: `pages/portal/education/resources/index.vue`, `pages/portal/education/resources/[slug].vue` — portal biblioteka, download tracking, tier limits
 
-- ✅ Deployment: Multi-cloud infrastructure
-  - `docs/DEPLOYMENT.md` — DigitalOcean, AWS, Azure, HostGator vodič
-  - `docker-compose.prod.yml` — Production Docker setup
-  - `.github/workflows/deploy.yml` — CI/CD pipeline
-  - `scripts/deploy.sh` — Deployment script
-  - `scripts/backup.sh` — Backup script
-  - `.do/app.yaml` — DigitalOcean App Platform config
-  - `docker/nginx/nginx.conf` — Nginx reverse proxy config
+- ✅ Deployment documentation contribution
+  - `docs/DEPLOYMENT.md` — historical provider reference
+  - `docker-compose.prod.yml` — production compose setup exists
+  - `docker/nginx/nginx.conf` — nginx reverse proxy config
 
 **QWEN — Pravila:**
 - Koristi iste konvencije: `useAsyncData`, `useSupabase()`, `useAuth()`
@@ -1434,6 +1430,45 @@ WEEK 15: T-702, T-703 (production deploy)
 - Brand boje: primary-500 (#9b51e0), brand-red (#cf2e2e), brand-blue (#0693e3)
 - Sve DB tabele su kreirana u migracijama 010–019
 - Markiraj završene taskove sa ✅ DONE (Qwen) u ovom fajlu
+
+---
+
+## 📊 Production Readiness Summary
+
+This summary tracks documentation and repository scaffolding, not launch sign-off.
+
+### ✅ COMPLETED - Production Documentation
+
+| Document | Status | Purpose |
+|----------|--------|---------|
+| `docs/PRODUCTION-STATUS.md` | ✅ DONE | Short operational launch snapshot |
+| `docs/PRODUCTION-READINESS.md` | ✅ DONE | Conservative release gate |
+| `docs/SECURITY-BEST-PRACTICES.md` | ✅ DONE | Security guidelines & examples |
+| `docs/CODE-REVIEW.md` | ✅ DONE | Code review standards |
+| `docs/PRODUCTION-DEPLOYMENT.md` | ✅ DONE | Compose-based deployment guide |
+| `docs/DEPLOYMENT.md` | ✅ DONE | Historical provider reference, not canonical |
+
+### ✅ COMPLETED - Security Implementation
+
+| Feature | File | Status |
+|---------|------|--------|
+| Security Hardening Migration | `supabase/migrations/026_security_hardening.sql` | ✅ DONE |
+| Error Handling Composable | `frontend/composables/useErrorHandler.ts` | ✅ DONE |
+| Error Boundary Component | `frontend/components/app/ErrorBoundary.vue` | ✅ DONE |
+| Environment Template | `.env.production.example` | ✅ DONE |
+
+### 🎯 Production Readiness: Not Yet Signed Off
+
+**Strongly improved:**
+- ✅ Production packaging is materially cleaner
+- ✅ Security review and launch blockers are documented
+- ✅ Deployment path is clearer than before
+
+**Still blocking launch:**
+- ⚠️ Auth E2E verification on a clean stack
+- ⚠️ RLS verification with real role-based users
+- ⚠️ Frontend typecheck/build recorded from an installed environment
+- ⚠️ Real host deployment drill with rollback and restore evidence
 
 ---
 
