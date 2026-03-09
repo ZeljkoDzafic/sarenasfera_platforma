@@ -248,12 +248,7 @@
   - Print-friendly view
 - **Output:** Passport components + RadarChart
 
-<<<<<<< claude/review-tasks-documentation-Dj0Ne
-### T-304: Workshop Calendar
-- **Status:** ✅ DONE (Claude — `pages/portal/calendar.vue`)
-=======
-### T-304: Workshop Calendar ✅ DONE (Codex)
->>>>>>> main
+### ✅ T-304: Workshop Calendar — DONE (Claude + Codex)
 - **Depends on:** T-300
 - **Agent scope:** Workshop schedule and materials
 - **Acceptance criteria:**
