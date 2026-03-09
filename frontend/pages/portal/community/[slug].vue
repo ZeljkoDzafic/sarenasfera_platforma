@@ -66,11 +66,11 @@
 
     <!-- Replies -->
     <section>
-      <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Odgovori ({{ replies.length }})</h2>
+      <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Odgovori ({{ replyItems.length }})</h2>
 
-      <div v-if="replies && replies.length > 0" class="space-y-3">
+      <div v-if="replyItems.length > 0" class="space-y-3">
         <div
-          v-for="reply in replies"
+          v-for="reply in replyItems"
           :key="reply.id"
           class="card"
           :class="reply.is_answer ? 'border-2 border-brand-green' : ''"
@@ -204,6 +204,8 @@ const { data: replies, refresh } = await useAsyncData(`forum-replies-${topicSlug
 
   return data ?? []
 })
+
+const replyItems = computed(() => replies.value ?? [])
 
 async function submitReply() {
   if (!topic.value || !user.value) return

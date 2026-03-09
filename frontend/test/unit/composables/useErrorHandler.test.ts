@@ -117,7 +117,7 @@ describe('useErrorHandler', () => {
       
       // Should not call audit_logs for non-security errors
       const auditCalls = mockSupabase.from.mock.calls.filter(
-        call => call[0] === 'audit_logs'
+        (call: any[]) => call[0] === 'audit_logs'
       )
       expect(auditCalls.length).toBe(0)
     })

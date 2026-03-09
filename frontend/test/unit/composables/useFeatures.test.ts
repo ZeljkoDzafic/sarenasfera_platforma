@@ -48,9 +48,9 @@ describe('useFeatures', () => {
 
   describe('loadFeatures', () => {
     it('should load features from database', async () => {
-      const { loadFeatures, activeFeatures } = await import('~/composables/useFeatures')
-      const { loadFeatures: loadFeaturesFn } = await loadFeatures()
-      await loadFeaturesFn()
+      const useFeatures = await import('~/composables/useFeatures')
+      const { loadFeatures, activeFeatures } = useFeatures.useFeatures()
+      await loadFeatures()
       expect(activeFeatures.value.length).toBeGreaterThan(0)
     })
 

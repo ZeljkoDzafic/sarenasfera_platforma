@@ -280,11 +280,14 @@ const filteredEvents = computed<EventCard[]>(() => {
   }
 
   if (filterAge.value) {
-    const [minAge, maxAge] = filterAge.value.split('-').map(Number)
+    const ageParts = filterAge.value.split('-').map(Number)
+    const minAge = ageParts[0]
+    const maxAge = ageParts[1]
+    if (Number.isNaN(minAge) || Number.isNaN(maxAge)) return list
     list = list.filter((e) => {
       const ageMin = e.age_min
       const ageMax = e.age_max
-      return ageMin <= maxAge && ageMax >= minAge
+      return ageMin <= (maxAge ?? ageMin) && ageMax >= (minAge ?? ageMax)
     })
   }
 

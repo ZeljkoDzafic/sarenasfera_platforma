@@ -33,9 +33,9 @@
     </div>
 
     <!-- Photo grid -->
-    <div v-else-if="photos.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+    <div v-else-if="photoItems.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
       <div
-        v-for="photo in photos"
+        v-for="photo in photoItems"
         :key="photo.id"
         class="aspect-square rounded-xl overflow-hidden cursor-pointer relative group"
         @click="openPhoto(photo)"
@@ -123,5 +123,6 @@ const { data: photos, pending } = await useAsyncData('gallery-photos', async () 
 }, { watch: [activeChild] })
 
 const activePhoto = ref<{ file_url: string; caption?: string } | null>(null)
+const photoItems = computed(() => photos.value ?? [])
 function openPhoto(photo: { file_url: string; caption?: string }) { activePhoto.value = photo }
 </script>

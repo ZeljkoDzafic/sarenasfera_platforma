@@ -59,21 +59,21 @@
           v-for="session in displayedSessions"
           :key="session.id"
           class="card-domain"
-          :style="{ borderColor: getDomainColor(session.workshops?.domains?.[0]) }"
+          :style="{ borderColor: getDomainColor(firstSessionWorkshopDomain(session.workshops)) }"
         >
           <div class="flex items-start gap-3">
             <div
               class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
-              :style="{ backgroundColor: getDomainColor(session.workshops?.domains?.[0]) }"
+              :style="{ backgroundColor: getDomainColor(firstSessionWorkshopDomain(session.workshops)) }"
             >
               {{ formatDayNum(session.scheduled_date) }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-gray-900 truncate">{{ session.workshops?.title ?? 'Radionica' }}</p>
+              <p class="font-semibold text-gray-900 truncate">{{ firstSessionWorkshopTitle(session.workshops) }}</p>
               <p class="text-sm text-gray-500">
                 {{ formatDate(session.scheduled_date) }}
                 {{ session.scheduled_time_start ? `• ${session.scheduled_time_start.slice(0,5)}` : '' }}
-                {{ session.groups?.name ? `• ${session.groups.name}` : '' }}
+                {{ firstSessionGroupName(session.groups) ? `• ${firstSessionGroupName(session.groups)}` : '' }}
               </p>
             </div>
             <span
@@ -180,6 +180,18 @@ const domainColors: Record<string, string> = {
   cognitive: '#0693e3', motor: '#00d084', language: '#f78da7',
 }
 function getDomainColor(domain?: string): string { return domain ? (domainColors[domain] ?? '#9b51e0') : '#9b51e0' }
+
+function firstSessionWorkshopDomain(workshops: Array<{ domains?: string[] | null }> | null | undefined): string | undefined {
+  return workshops?.[0]?.domains?.[0] ?? undefined
+}
+
+function firstSessionWorkshopTitle(workshops: Array<{ title?: string | null }> | null | undefined): string {
+  return workshops?.[0]?.title ?? 'Radionica'
+}
+
+function firstSessionGroupName(groups: Array<{ name?: string | null }> | null | undefined): string {
+  return groups?.[0]?.name ?? ''
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('bs-BA', { day: 'numeric', month: 'long' })

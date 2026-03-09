@@ -193,7 +193,7 @@ const domainStats = computed(() => {
 const groupAttendance = computed(() => {
   // Simplified — would need real session+attendance join
   return (stats.value?.groups ?? []).map((g: Record<string, unknown>) => ({
-    name: g.name,
+    name: typeof g.name === 'string' ? g.name : 'Grupa',
     rate: Math.floor(75 + Math.random() * 20), // placeholder
   }))
 })
@@ -221,13 +221,21 @@ const subTiers = computed(() => {
 
 const recentActivity = computed(() => {
   const obs = (stats.value?.recentObs ?? []).map((o: Record<string, unknown>) => ({
-    id: o.id, emoji: '👁️', text: `Nova opservacija: ${(o.content as string)?.slice(0, 40)}...`, time: o.created_at, color: '#9b51e0',
+    id: String(o.id ?? ''), emoji: '👁️', text: `Nova opservacija: ${(o.content as string)?.slice(0, 40)}...`, time: o.created_at, color: '#9b51e0',
   }))
   const att = (stats.value?.recentAtt ?? []).map((a: Record<string, unknown>) => ({
-    id: `att-${a.id}`, emoji: '✅', text: `Prisustvo: ${(a.children as { full_name?: string } | null)?.full_name ?? '—'}`, time: a.created_at, color: '#00d084',
+    id: `att-${String(a.id ?? '')}`, emoji: '✅', text: `Prisustvo: ${firstAttendanceChildName(a.children)}`, time: a.created_at, color: '#00d084',
   }))
   return [...obs, ...att].sort((x, y) => new Date(y.time as string).getTime() - new Date(x.time as string).getTime()).slice(0, 8)
 })
+
+function firstAttendanceChildName(children: unknown): string {
+  if (Array.isArray(children)) return children[0]?.full_name ?? '—'
+  if (children && typeof children === 'object' && 'full_name' in children) {
+    return (children as { full_name?: string | null }).full_name ?? '—'
+  }
+  return '—'
+}
 
 function timeAgo(iso: unknown): string {
   if (typeof iso !== 'string') return '—'

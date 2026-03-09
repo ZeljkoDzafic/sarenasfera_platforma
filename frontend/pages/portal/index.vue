@@ -54,9 +54,9 @@
           <div class="mb-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                v-if="child.photo_url"
+              v-if="childPhotoUrl(child)"
                 class="h-12 w-12 rounded-full bg-cover bg-center"
-                :style="{ backgroundImage: `url(${child.photo_url})` }"
+                :style="{ backgroundImage: `url(${childPhotoUrl(child)})` }"
               />
               <div v-else class="h-12 w-12 rounded-full border-2 border-primary-300 bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
                 {{ child.full_name[0] }}
@@ -208,7 +208,7 @@ const { data: upcomingWorkshops } = await useAsyncData('dashboard-workshops', as
   
   return (data ?? []).map(s => ({
     id: s.id,
-    title: s.workshops?.title ?? 'Radionica',
+    title: firstDashboardWorkshopTitle(s.workshops),
     date: new Date(s.scheduled_date).toLocaleDateString('bs-BA', { weekday: 'long', day: 'numeric', month: 'short' }),
   }))
 })
@@ -235,7 +235,7 @@ const { data: recentObservations } = await useAsyncData('dashboard-observations'
   
   return (data ?? []).map(o => ({
     id: o.id,
-    childName: o.children?.full_name ?? 'Dijete',
+    childName: firstObservationChildName(o.children),
     domain: o.skill_area_id ? domainNames[o.skill_area_id] ?? 'Opservacija' : 'Opservacija',
     note: o.content.length > 80 ? o.content.substring(0, 80) + '...' : o.content,
   }))
@@ -259,7 +259,7 @@ const { data: pendingActivities } = await useAsyncData('dashboard-activities', a
   
   return (data ?? []).map(a => ({
     id: a.id,
-    title: a.workshops?.home_activity_title ?? 'Kućna aktivnost',
+    title: firstHomeActivityTitle(a.workshops),
     deadline: formatDeadline(a.assigned_at),
   }))
 })
@@ -294,5 +294,21 @@ function childAge(dob: string): string {
   const rem = months % 12
   if (rem === 0) return `${years} ${years === 1 ? 'godina' : 'godine'}`
   return `${years} god. ${rem} mj.`
+}
+
+function childPhotoUrl(child: Record<string, unknown>): string | null {
+  return typeof child.photo_url === 'string' ? child.photo_url : null
+}
+
+function firstDashboardWorkshopTitle(workshops: Array<{ title?: string | null }> | null | undefined): string {
+  return workshops?.[0]?.title ?? 'Radionica'
+}
+
+function firstObservationChildName(children: Array<{ full_name?: string | null }> | null | undefined): string {
+  return children?.[0]?.full_name ?? 'Dijete'
+}
+
+function firstHomeActivityTitle(workshops: Array<{ home_activity_title?: string | null }> | null | undefined): string {
+  return workshops?.[0]?.home_activity_title ?? 'Kućna aktivnost'
 }
 </script>

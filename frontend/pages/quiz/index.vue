@@ -50,20 +50,20 @@
       <!-- Question card -->
       <Transition name="slide" mode="out-in">
         <div :key="step" class="bg-white rounded-2xl shadow-card p-8">
-          <div class="text-4xl mb-4 text-center">{{ currentQuestion.emoji }}</div>
+          <div class="text-4xl mb-4 text-center">{{ currentQuestion?.emoji }}</div>
           <h2 class="font-display font-bold text-xl text-gray-900 text-center mb-6">
-            {{ currentQuestion.question }}
+            {{ currentQuestion?.question }}
           </h2>
 
           <div class="space-y-3">
             <button
-              v-for="option in currentQuestion.options"
+              v-for="option in currentQuestion?.options ?? []"
               :key="option.value"
               class="w-full text-left p-4 rounded-xl border-2 transition-all font-medium"
-              :class="answers[currentQuestion.id] === option.value
+              :class="currentQuestion && answers[currentQuestion.id] === option.value
                 ? 'border-primary-500 bg-primary-50 text-primary-700'
                 : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50/50 text-gray-700'"
-              @click="selectAnswer(currentQuestion.id, option.value)"
+              @click="currentQuestion && selectAnswer(currentQuestion.id, option.value)"
             >
               <div class="flex items-center gap-3">
                 <span class="text-xl">{{ option.emoji }}</span>
@@ -83,7 +83,7 @@
             <div v-else />
             <button
               class="btn-primary"
-              :disabled="!answers[currentQuestion.id]"
+              :disabled="!currentQuestion || !answers[currentQuestion.id]"
               @click="nextStep"
             >
               {{ step === questions.length ? 'Vidi rezultate →' : 'Sljedeće →' }}
@@ -337,7 +337,7 @@ const questions = [
   },
 ]
 
-const currentQuestion = computed(() => questions[step.value - 1])
+const currentQuestion = computed<(typeof questions)[number] | undefined>(() => questions[step.value - 1])
 
 const ageGroupLabel = computed(() => {
   const map: Record<string, string> = {
@@ -346,7 +346,8 @@ const ageGroupLabel = computed(() => {
     '4-5': '4–5 godina',
     '5-6': '5–6 godina',
   }
-  return map[answers.age_group] ?? '2–6 godina'
+  const selectedAgeGroup = answers.age_group
+  return selectedAgeGroup ? (map[selectedAgeGroup] ?? '2–6 godina') : '2–6 godina'
 })
 
 const domains = [

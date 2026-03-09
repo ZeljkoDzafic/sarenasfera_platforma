@@ -57,17 +57,17 @@
           <!-- Domain color indicator -->
           <div
             class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg"
-            :style="{ backgroundColor: getDomainColor(activity.workshops?.domains?.[0]) }"
+            :style="{ backgroundColor: getDomainColor(firstWorkshopDomain(activity.workshops)) }"
           >
-            {{ getDomainEmoji(activity.workshops?.domains?.[0]) }}
+            {{ getDomainEmoji(firstWorkshopDomain(activity.workshops)) }}
           </div>
 
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
               <div>
-                <h3 class="font-semibold text-gray-900">{{ activity.workshops?.home_activity_title ?? 'Aktivnost' }}</h3>
+                <h3 class="font-semibold text-gray-900">{{ firstWorkshopTitle(activity.workshops) }}</h3>
                 <p class="text-xs text-gray-500 mt-0.5">
-                  {{ activity.children?.full_name }} •
+                  {{ firstChildName(activity.children) }} •
                   Zadano: {{ formatDate(activity.assigned_at) }}
                 </p>
               </div>
@@ -79,8 +79,8 @@
               </span>
             </div>
 
-            <p v-if="activity.workshops?.home_activity_description" class="text-sm text-gray-600 mt-2 line-clamp-2">
-              {{ activity.workshops.home_activity_description }}
+            <p v-if="firstWorkshopDescription(activity.workshops)" class="text-sm text-gray-600 mt-2 line-clamp-2">
+              {{ firstWorkshopDescription(activity.workshops) }}
             </p>
 
             <div class="flex items-center gap-3 mt-3">
@@ -99,8 +99,8 @@
                 Dodaj komentar
               </button>
               <a
-                v-if="activity.workshops?.home_activity_pdf_url"
-                :href="activity.workshops.home_activity_pdf_url"
+                v-if="firstWorkshopPdfUrl(activity.workshops)"
+                :href="firstWorkshopPdfUrl(activity.workshops) ?? undefined"
                 target="_blank"
                 class="text-xs text-primary-600 hover:underline font-semibold"
               >
@@ -423,6 +423,30 @@ const domainEmojis: Record<string, string> = {
 }
 function getDomainColor(d?: string): string { return d ? (domainColors[d] ?? '#9b51e0') : '#9b51e0' }
 function getDomainEmoji(d?: string): string { return d ? (domainEmojis[d] ?? '🎨') : '🎨' }
+
+function firstWorkshop(workshops: Array<{ home_activity_title?: string | null; home_activity_description?: string | null; home_activity_pdf_url?: string | null; domains?: string[] | null }> | null | undefined) {
+  return workshops?.[0] ?? null
+}
+
+function firstWorkshopDomain(workshops: Array<{ domains?: string[] | null }> | null | undefined): string | undefined {
+  return firstWorkshop(workshops)?.domains?.[0] ?? undefined
+}
+
+function firstWorkshopTitle(workshops: Array<{ home_activity_title?: string | null }> | null | undefined): string {
+  return firstWorkshop(workshops)?.home_activity_title ?? 'Aktivnost'
+}
+
+function firstWorkshopDescription(workshops: Array<{ home_activity_description?: string | null }> | null | undefined): string {
+  return firstWorkshop(workshops)?.home_activity_description ?? ''
+}
+
+function firstWorkshopPdfUrl(workshops: Array<{ home_activity_pdf_url?: string | null }> | null | undefined): string | null {
+  return firstWorkshop(workshops)?.home_activity_pdf_url ?? null
+}
+
+function firstChildName(children: Array<{ full_name?: string | null }> | null | undefined): string {
+  return children?.[0]?.full_name ?? 'Dijete'
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('bs-BA', { day: 'numeric', month: 'long' })

@@ -254,10 +254,13 @@ const filteredCourses = computed(() => {
 
   // Age filter
   if (filterAge.value) {
-    const [minAge, maxAge] = filterAge.value.split('-').map(Number)
+    const ageParts = filterAge.value.split('-').map(Number)
+    const minAge = ageParts[0]
+    const maxAge = ageParts[1]
+    if (Number.isNaN(minAge) || Number.isNaN(maxAge)) return courses
     courses = courses.filter(c =>
-      (!c.age_min || c.age_min <= maxAge) &&
-      (!c.age_max || c.age_max >= minAge)
+      (!c.age_min || c.age_min <= (maxAge ?? c.age_min)) &&
+      (!c.age_max || c.age_max >= (minAge ?? c.age_max))
     )
   }
 

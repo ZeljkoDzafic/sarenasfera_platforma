@@ -230,7 +230,9 @@ const { data: modulesData } = await useAsyncData(`course-modules-${courseSlug}`,
 
   return (data ?? []).map(m => ({
     ...m,
-    lessons: (m.course_lessons || []).sort((a, b) => a.sort_order - b.sort_order),
+    lessons: (m.course_lessons || []).sort(
+      (a: { sort_order?: number | null }, b: { sort_order?: number | null }) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+    ),
   }))
 })
 

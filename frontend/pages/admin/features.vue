@@ -212,7 +212,7 @@ const { data: features, pending, refresh } = await useAsyncData('admin-features'
 
 // Group features by section
 const groupedFeatures = computed(() => {
-  const groups: Record<string, typeof features.value> = {
+  const groups: Record<string, any[]> = {
     public: [],
     auth: [],
     portal: [],
@@ -229,7 +229,7 @@ const groupedFeatures = computed(() => {
   // Filter by active filter
   if (activeFilter.value !== 'all') {
     Object.keys(groups).forEach(key => {
-      groups[key] = groups[key].filter(f => f.status === activeFilter.value)
+      groups[key] = (groups[key] ?? []).filter(f => f.status === activeFilter.value)
     })
   }
 
@@ -241,7 +241,7 @@ const comingSoonCount = computed(() => features.value?.filter(f => f.status === 
 const hiddenCount = computed(() => features.value?.filter(f => f.status === 'hidden').length ?? 0)
 const betaCount = computed(() => features.value?.filter(f => f.status === 'beta').length ?? 0)
 
-const showingInterestFor = ref<typeof features.value[number] | null>(null)
+const showingInterestFor = ref<any | null>(null)
 const interestList = ref<any[]>([])
 
 async function updateFeature(feature: any) {

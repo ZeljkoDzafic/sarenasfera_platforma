@@ -217,7 +217,7 @@
             </div>
             <div>
               <label class="label">Stopa provizije (%)</label>
-              <input v-model="newPartner.commission" type="number" class="input" value="20" />
+              <input v-model="newPartner.commission" type="number" class="input" />
             </div>
             <div class="flex gap-3">
               <button type="button" class="btn-secondary flex-1" @click="showAddPartner = false">Otkaži</button>

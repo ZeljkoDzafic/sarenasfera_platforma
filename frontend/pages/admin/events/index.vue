@@ -229,11 +229,17 @@ const domainIcons: Record<string, string> = {
 }
 
 function getDomainColor(domain: string | null): string {
-  return domainColors[domain || 'all'] || domainColors.all
+  if (domain && domain in domainColors) {
+    return domainColors[domain as keyof typeof domainColors] ?? domainColors.all ?? '#9b51e0'
+  }
+  return domainColors.all ?? '#9b51e0'
 }
 
 function getDomainIcon(domain: string | null): string {
-  return domainIcons[domain || 'all'] || domainIcons.all
+  if (domain && domain in domainIcons) {
+    return domainIcons[domain as keyof typeof domainIcons] ?? domainIcons.all ?? '🌟'
+  }
+  return domainIcons.all ?? '🌟'
 }
 
 function formatDate(iso: string): string {

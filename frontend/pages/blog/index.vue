@@ -29,36 +29,36 @@
         </div>
 
         <!-- Featured Post -->
-        <div v-if="filteredPosts.length > 0" class="mb-10">
-          <NuxtLink :to="`/blog/${filteredPosts[0].slug}`" class="card-hover block overflow-hidden">
+        <div v-if="featuredPost" class="mb-10">
+          <NuxtLink :to="`/blog/${featuredPost.slug}`" class="card-hover block overflow-hidden">
             <div class="flex flex-col md:flex-row gap-6">
               <div
                 class="h-48 md:h-auto md:w-64 flex-shrink-0 rounded-xl flex items-center justify-center text-6xl"
-                :style="{ backgroundColor: filteredPosts[0].color + '20' }"
+                :style="{ backgroundColor: featuredPost.color + '20' }"
               >
-                {{ filteredPosts[0].emoji }}
+                {{ featuredPost.emoji }}
               </div>
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-3">
                   <span
                     class="text-xs font-semibold px-3 py-1 rounded-full"
-                    :style="{ backgroundColor: filteredPosts[0].color + '20', color: filteredPosts[0].color }"
+                    :style="{ backgroundColor: featuredPost.color + '20', color: featuredPost.color }"
                   >
-                    {{ filteredPosts[0].category }}
+                    {{ featuredPost.category }}
                   </span>
-                  <span class="text-xs text-gray-400">{{ filteredPosts[0].readTime }} min čitanja</span>
+                  <span class="text-xs text-gray-400">{{ featuredPost.readTime }} min čitanja</span>
                   <span class="text-xs text-gray-400">•</span>
-                  <span class="text-xs text-gray-400">{{ filteredPosts[0].date }}</span>
+                  <span class="text-xs text-gray-400">{{ featuredPost.date }}</span>
                 </div>
                 <h2 class="font-display font-bold text-2xl text-gray-900 mb-3 hover:text-primary-600 transition-colors">
-                  {{ filteredPosts[0].title }}
+                  {{ featuredPost.title }}
                 </h2>
-                <p class="text-gray-600 mb-4">{{ filteredPosts[0].excerpt }}</p>
+                <p class="text-gray-600 mb-4">{{ featuredPost.excerpt }}</p>
                 <div class="flex items-center gap-2">
                   <div class="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center text-xs font-bold text-primary-600">
-                    {{ filteredPosts[0].author[0] }}
+                    {{ featuredPost.author[0] }}
                   </div>
-                  <span class="text-sm text-gray-600">{{ filteredPosts[0].author }}</span>
+                  <span class="text-sm text-gray-600">{{ featuredPost.author }}</span>
                 </div>
               </div>
             </div>
@@ -134,7 +134,7 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      children: JSON.stringify({
+      innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Blog',
         name: 'Šarena Sfera Blog',
@@ -238,6 +238,7 @@ const posts = [
 ]
 
 const allCategories = computed(() => ['Sve kategorije', ...new Set(posts.map(p => p.category))])
+const featuredPost = computed(() => filteredPosts.value[0] ?? null)
 
 const filteredPosts = computed(() => {
   const filtered = activeCategory.value === 'Sve kategorije'

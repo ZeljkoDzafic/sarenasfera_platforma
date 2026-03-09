@@ -230,7 +230,9 @@ function removeModule(index: number) {
   modules.value.splice(index, 1)
 }
 function addLesson(moduleIndex: number) {
-  modules.value[moduleIndex].lessons.push({
+  const module = modules.value[moduleIndex]
+  if (!module) return
+  module.lessons.push({
     localId: crypto.randomUUID(),
     title: '',
     description: '',
@@ -241,7 +243,9 @@ function addLesson(moduleIndex: number) {
   })
 }
 function removeLesson(moduleIndex: number, lessonIndex: number) {
-  modules.value[moduleIndex].lessons.splice(lessonIndex, 1)
+  const module = modules.value[moduleIndex]
+  if (!module) return
+  module.lessons.splice(lessonIndex, 1)
 }
 
 async function saveCourse() {

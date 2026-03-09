@@ -6,7 +6,7 @@
         <h1 class="font-display text-2xl font-bold text-gray-900">{{ group?.name ?? '...' }}</h1>
         <p class="text-sm text-gray-500 mt-0.5">
           {{ group?.age_min }}–{{ group?.age_max }} godina
-          • {{ roster.length }}/{{ group?.max_children }} djece
+          • {{ rosterItems.length }}/{{ group?.max_children }} djece
         </p>
       </div>
     </div>
@@ -17,15 +17,15 @@
       <!-- Stats row -->
       <div class="grid grid-cols-3 gap-4">
         <div class="card text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ roster.length }}</div>
+          <div class="text-2xl font-bold text-primary-600">{{ rosterItems.length }}</div>
           <div class="text-xs text-gray-400">Djece</div>
         </div>
         <div class="card text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ staff.length }}</div>
+          <div class="text-2xl font-bold text-primary-600">{{ staffItems.length }}</div>
           <div class="text-xs text-gray-400">Voditelja</div>
         </div>
         <div class="card text-center">
-          <div class="text-2xl font-bold text-primary-600">{{ upcomingSessions.length }}</div>
+          <div class="text-2xl font-bold text-primary-600">{{ upcomingSessionItems.length }}</div>
           <div class="text-xs text-gray-400">Nadolazećih</div>
         </div>
       </div>
@@ -37,9 +37,9 @@
           <button class="btn-secondary text-xs" @click="showAddChild = true">+ Dodaj dijete</button>
         </div>
 
-        <div v-if="roster.length > 0" class="space-y-2">
+        <div v-if="rosterItems.length > 0" class="space-y-2">
           <div
-            v-for="child in roster"
+            v-for="child in rosterItems"
             :key="child.id"
             class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
           >
@@ -61,8 +61,8 @@
       <!-- Staff -->
       <div class="card">
         <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Voditelji</h2>
-        <div v-if="staff.length > 0" class="space-y-2">
-          <div v-for="s in staff" :key="s.id" class="flex items-center gap-3 py-2">
+        <div v-if="staffItems.length > 0" class="space-y-2">
+          <div v-for="s in staffItems" :key="s.id" class="flex items-center gap-3 py-2">
             <div class="w-8 h-8 rounded-xl bg-brand-blue/10 flex items-center justify-center font-bold text-brand-blue text-xs">
               {{ firstStaffName(s.profiles)[0] ?? '?' }}
             </div>
@@ -78,8 +78,8 @@
       <!-- Upcoming sessions -->
       <div class="card">
         <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Nadolazeće radionice</h2>
-        <div v-if="upcomingSessions.length > 0" class="space-y-2">
-          <div v-for="s in upcomingSessions" :key="s.id" class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+        <div v-if="upcomingSessionItems.length > 0" class="space-y-2">
+          <div v-for="s in upcomingSessionItems" :key="s.id" class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
             <div class="w-10 h-10 rounded-xl bg-primary-500 text-white flex flex-col items-center justify-center">
               <span class="text-xs font-bold leading-none">{{ new Date(s.scheduled_date).getDate() }}</span>
               <span class="text-xs opacity-80">{{ new Date(s.scheduled_date).toLocaleDateString('bs-BA', { month: 'short' }) }}</span>
@@ -174,6 +174,10 @@ const availableChildren = computed(() => {
   const inGroup = new Set((roster.value ?? []).map((r: { child_id: string }) => r.child_id))
   return (allChildren.value ?? []).filter((c: { id: string }) => !inGroup.has(c.id))
 })
+
+const rosterItems = computed(() => roster.value ?? [])
+const staffItems = computed(() => staff.value ?? [])
+const upcomingSessionItems = computed(() => upcomingSessions.value ?? [])
 
 async function addChild() {
   if (!selectedChildId.value) return

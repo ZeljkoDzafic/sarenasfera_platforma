@@ -65,7 +65,7 @@
             <h2 class="font-display font-bold text-xl text-gray-900">{{ selectedMsg.subject }}</h2>
             <p class="text-sm text-gray-500 mt-1">
               Od: {{ getSenderName(selectedMsg) }} •
-              {{ new Date(selectedMsg.created_at).toLocaleString('bs-BA') }}
+              {{ formatDateTime(selectedMsg.created_at) }}
             </p>
           </div>
           <div class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">{{ selectedMsg.body }}</div>
@@ -213,5 +213,10 @@ function timeAgo(iso: string): string {
   const hrs = Math.floor(mins / 60)
   if (hrs < 24) return `${hrs}h`
   return `${Math.floor(hrs / 24)}d`
+}
+
+function formatDateTime(value: unknown): string {
+  if (typeof value !== 'string') return '—'
+  return new Date(value).toLocaleString('bs-BA')
 }
 </script>
