@@ -223,7 +223,7 @@ async function handleRegister() {
   submitting.value = true
 
   try {
-    const { data } = await signUp(form.email, form.password, {
+    const data = await signUp(form.email, form.password, {
       full_name: form.fullName,
       role: 'parent',
       tier_intent: selectedTier.value,

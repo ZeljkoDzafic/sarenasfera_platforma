@@ -165,9 +165,11 @@ const childId = route.params.id as string
 
 const editing = ref(false)
 const saving = ref(false)
-const activeTab = ref('observations')
+type AdminChildTab = 'observations' | 'assessments' | 'attendance'
 
-const tabs = [
+const activeTab = ref<AdminChildTab>('observations')
+
+const tabs: Array<{ key: AdminChildTab; label: string }> = [
   { key: 'observations', label: 'Opservacije' },
   { key: 'assessments', label: 'Procjene' },
   { key: 'attendance', label: 'Prisustvo' },
@@ -223,7 +225,7 @@ watch(child, (c) => {
   }
 }, { immediate: true })
 
-const { data: observations } = await useAsyncData(`admin-child-obs-${childId}`, async () => {
+const { data: observationsData } = await useAsyncData(`admin-child-obs-${childId}`, async () => {
   const { data } = await supabase
     .from('observations')
     .select('id, domain, content, observed_at, created_at, profiles(full_name)')
@@ -233,7 +235,7 @@ const { data: observations } = await useAsyncData(`admin-child-obs-${childId}`, 
   return data ?? []
 })
 
-const { data: assessments } = await useAsyncData(`admin-child-assess-${childId}`, async () => {
+const { data: assessmentsData } = await useAsyncData(`admin-child-assess-${childId}`, async () => {
   const { data } = await supabase
     .from('assessments')
     .select('*')
@@ -243,7 +245,7 @@ const { data: assessments } = await useAsyncData(`admin-child-assess-${childId}`
   return data ?? []
 })
 
-const { data: attendance } = await useAsyncData(`admin-child-att-${childId}`, async () => {
+const { data: attendanceData } = await useAsyncData(`admin-child-att-${childId}`, async () => {
   const { data } = await supabase
     .from('attendance')
     .select('id, status, sessions(scheduled_date, workshops(title))')
@@ -253,8 +255,12 @@ const { data: attendance } = await useAsyncData(`admin-child-att-${childId}`, as
   return data ?? []
 })
 
+const observations = computed(() => observationsData.value ?? [])
+const assessments = computed(() => assessmentsData.value ?? [])
+const attendance = computed(() => attendanceData.value ?? [])
+
 function getScore(domain: string): number {
-  const latest = (assessments.value ?? []).find((a: Record<string, unknown>) => a.domain === domain)
+  const latest = assessments.value.find((a: Record<string, unknown>) => a.domain === domain)
   return latest ? Number(latest.score) : 0
 }
 

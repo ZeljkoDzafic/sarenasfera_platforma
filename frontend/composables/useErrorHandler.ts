@@ -11,6 +11,15 @@ interface UserFriendlyError {
   retryable?: boolean
 }
 
+interface ToastPayload {
+  title: string
+  description: string
+  icon: string
+  color: string
+  duration: number
+  actions?: Array<{ label: string; click: () => void }>
+}
+
 const errorMessages: Record<string, UserFriendlyError> = {
   // Auth errors
   'Invalid login credentials': {
@@ -84,13 +93,19 @@ const errorMessages: Record<string, UserFriendlyError> = {
 }
 
 export function useErrorHandler() {
-  const toast = useToast()
-
-  function getSupabaseErrorCode(error: any): string {
-    return error?.code || error?.message || 'unknown'
+  const toast = {
+    add: (_payload: ToastPayload) => {
+      // Placeholder until a real toast plugin is wired into the app shell.
+    },
   }
 
-  function getUserFriendlyError(error: any): UserFriendlyError {
+  function getSupabaseErrorCode(error: unknown): string {
+    const value = error as { code?: string; message?: string } | null
+    if (!value) return 'unknown'
+    return value.code || value.message || 'unknown'
+  }
+
+  function getUserFriendlyError(error: unknown): UserFriendlyError {
     const code = getSupabaseErrorCode(error)
     
     // Check if we have a predefined message
@@ -114,7 +129,7 @@ export function useErrorHandler() {
     }
   }
 
-  function handleError(error: any, context?: string) {
+  function handleError(error: unknown, context?: string) {
     const friendlyError = getUserFriendlyError(error)
     
     // Log to console (in development)
@@ -145,20 +160,21 @@ export function useErrorHandler() {
     return friendlyError
   }
 
-  async function logErrorToAudit(error: any, context?: string) {
+  async function logErrorToAudit(error: unknown, context?: string) {
     if (!import.meta.client) return
     
     const supabase = useSupabase()
     const { user } = useAuth()
+    const value = error as { code?: string; message?: string } | null
     
     try {
       await supabase.from('audit_logs').insert({
-        user_id: user?.id,
+        user_id: user.value?.id,
         action: 'error',
         metadata: {
           context,
-          error_code: error?.code,
-          error_message: error?.message,
+          error_code: value?.code,
+          error_message: value?.message,
           timestamp: new Date().toISOString(),
         },
       })

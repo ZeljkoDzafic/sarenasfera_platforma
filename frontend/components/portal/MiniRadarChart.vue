@@ -15,8 +15,8 @@
         :key="axis.key"
         x1="60"
         y1="60"
-        :x2="axisPoints[index].x"
-        :y2="axisPoints[index].y"
+        :x2="axisPoints[index]?.x ?? center.x"
+        :y2="axisPoints[index]?.y ?? center.y"
         stroke="#e5e7eb"
         stroke-width="1"
       />
@@ -29,12 +29,12 @@
       />
 
       <circle
-        v-for="(point, index) in valuePoints"
-        :key="axes[index].key"
+        v-for="point in valuePoints"
+        :key="point.key"
         :cx="point.x"
         :cy="point.y"
         r="3"
-        :fill="axes[index].color"
+        :fill="point.color"
       />
     </svg>
   </div>
@@ -71,6 +71,8 @@ const valuePoints = computed(() => {
     const angle = (Math.PI * 2 * index) / axes.value.length - Math.PI / 2
     const scaledRadius = (Math.max(1, Math.min(5, axis.value)) / 5) * radius
     return {
+      key: axis.key,
+      color: axis.color,
       x: center.x + Math.cos(angle) * scaledRadius,
       y: center.y + Math.sin(angle) * scaledRadius,
     }

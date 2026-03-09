@@ -66,40 +66,73 @@
 </template>
 
 <script setup lang="ts">
-import type { CapturedErrorHandler } from 'vue'
+type CapturedErrorHandler = (err: unknown, vm: unknown, info: string) => void
 
-const error = ref<unknown>(null)
-const errorInfo = ref({
+interface BoundaryError {
+  message?: string
+  stack?: string
+  code?: string
+}
+
+interface BoundaryErrorInfo {
+  title: string
+  message: string
+  retryable: boolean
+  action: string
+}
+
+const error = ref<BoundaryError | null>(null)
+const errorInfo = ref<BoundaryErrorInfo>({
   title: 'Greška',
   message: 'Došlo je do neočekivane greške.',
   retryable: false,
   action: '',
 })
 
+function toBoundaryError(value: unknown): BoundaryError {
+  if (value instanceof Error) {
+    return {
+      message: value.message,
+      stack: value.stack,
+    }
+  }
+
+  if (value && typeof value === 'object') {
+    return value as BoundaryError
+  }
+
+  return {
+    message: typeof value === 'string' ? value : 'Nepoznata greška',
+  }
+}
+
 // Vue error handler
-const errorHandler: CapturedErrorHandler = (err, vm, info) => {
+const errorHandler: CapturedErrorHandler = (err, _vm, info) => {
   console.error('Vue Error:', err, info)
-  error.value = err
+  error.value = toBoundaryError(err)
+  const message = error.value.message ?? ''
   
   // Determine error type
-  if (err?.message?.includes('Authentication')) {
+  if (message.includes('Authentication')) {
     errorInfo.value = {
       title: 'Problem sa prijavom',
       message: 'Vaša sesija je istekla. Prijavite se ponovo.',
       retryable: false,
       action: 'Prijava',
     }
-  } else if (err?.message?.includes('Network')) {
+  } else if (message.includes('Network')) {
     errorInfo.value = {
       title: 'Problem sa konekcijom',
       message: 'Provjerite internet konekciju i pokušajte ponovo.',
       retryable: true,
+      action: '',
     }
-  } else if (err?.message?.includes('Permission')) {
+  } else if (message.includes('Permission')) {
     errorInfo.value = {
       title: 'Nemate pristup',
       message: 'Nemate dozvolu za pristup ovoj stranici.',
       retryable: false,
+      action: '',
     }
   }
 }
@@ -108,11 +141,12 @@ const errorHandler: CapturedErrorHandler = (err, vm, info) => {
 onMounted(() => {
   window.addEventListener('error', (event) => {
     console.error('Global Error:', event.error)
-    error.value = event.error
+    error.value = toBoundaryError(event.error)
     errorInfo.value = {
       title: 'Greška u aplikaciji',
       message: 'Došlo je do tehničkog problema.',
       retryable: true,
+      action: '',
     }
   })
 
@@ -135,11 +169,11 @@ watch(error, async (newError) => {
   
   try {
     await supabase.from('audit_logs').insert({
-      user_id: user?.id,
+      user_id: user.value?.id,
       action: 'frontend_error',
       metadata: {
-        error_message: newError?.message,
-        error_stack: newError?.stack,
+        error_message: newError.message,
+        error_stack: newError.stack,
         url: window.location.href,
         user_agent: navigator.userAgent,
         timestamp: new Date().toISOString(),
@@ -148,5 +182,10 @@ watch(error, async (newError) => {
   } catch {
     // Ignore logging errors
   }
+})
+
+onMounted(() => {
+  const vueApp = useNuxtApp().vueApp
+  vueApp.config.errorHandler = errorHandler
 })
 </script>

@@ -2,12 +2,12 @@
   <span
     v-if="visible"
     class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
-    :class="variantClasses[variant]"
+    :class="variantClasses[resolvedVariant]"
   >
     <slot name="icon">
-      <span v-if="variant === 'coming_soon'">🔜</span>
-      <span v-else-if="variant === 'beta'">🧪</span>
-      <span v-else-if="variant === 'locked'">🔒</span>
+      <span v-if="resolvedVariant === 'coming_soon'">🔜</span>
+      <span v-else-if="resolvedVariant === 'beta'">🧪</span>
+      <span v-else-if="resolvedVariant === 'locked'">🔒</span>
     </slot>
     {{ label }}
   </span>
@@ -39,5 +39,6 @@ const defaultLabels: Record<BadgeVariant, string> = {
 }
 
 const visible = computed(() => props.visible ?? true)
-const label = computed(() => props.label ?? defaultLabels[props.variant || 'coming_soon'])
+const resolvedVariant = computed<BadgeVariant>(() => props.variant ?? 'coming_soon')
+const label = computed(() => props.label ?? defaultLabels[resolvedVariant.value])
 </script>

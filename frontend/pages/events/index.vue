@@ -156,6 +156,26 @@ const filterAge = ref('')
 const filterDomain = ref('')
 const activeTab = ref<'all' | 'workshop' | 'webinar' | 'event'>('all')
 
+interface EventCard {
+  id: string
+  slug: string
+  title: string
+  short_desc: string
+  description?: string
+  domain: string
+  age_min: number
+  age_max: number
+  contentType: 'workshop' | 'webinar' | 'event'
+  typeLabel: string
+  is_free: boolean
+  price_km: number
+  location: string
+  location_url?: string | null
+  starts_at?: string
+  ends_at?: string
+  capacity: number
+}
+
 const tabs = [
   { value: 'all', label: 'Sve' },
   { value: 'workshop', label: 'Radionice' },
@@ -182,7 +202,7 @@ function getDomainName(domain: string): string {
 
 // Fetch events from Supabase
 const supabase = useSupabase()
-const { data: events, pending } = await useAsyncData('events', async () => {
+const { data: events, pending } = await useAsyncData<EventCard[]>('events', async () => {
   const { data: workshopRows } = await supabase
     .from('events')
     .select('*')
@@ -198,28 +218,35 @@ const { data: events, pending } = await useAsyncData('events', async () => {
     .eq('status', 'published')
     .order('starts_at', { ascending: true, nullsFirst: false })
 
-  const workshops = (workshopRows ?? []).map((event: Record<string, any>) => ({
+  const workshops: EventCard[] = (workshopRows ?? []).map((event: Record<string, any>) => ({
     ...event,
+    id: String(event.id),
+    slug: String(event.slug ?? event.id),
+    title: String(event.title ?? 'Radionica'),
+    short_desc: String(event.short_desc ?? event.description ?? ''),
+    domain: String(event.domain ?? 'creative'),
+    age_min: Number(event.age_min ?? 2),
+    age_max: Number(event.age_max ?? 6),
     contentType: 'workshop',
     typeLabel: 'Radionica',
-    price_km: event.price_km ?? 0,
+    price_km: Number(event.price_km ?? 0),
     is_free: Boolean(event.is_free),
-    location: event.location ?? 'Šarena Sfera',
+    location: String(event.location ?? 'Šarena Sfera'),
     starts_at: event.starts_at,
     ends_at: event.ends_at ?? event.starts_at,
-    capacity: event.capacity ?? 0,
+    capacity: Number(event.capacity ?? 0),
   }))
 
-  const education = (educationRows ?? []).map((content: Record<string, any>) => ({
-    id: content.id,
-    slug: content.slug,
-    title: content.title,
-    short_desc: content.short_description ?? content.description ?? 'Edukativni sadržaj za roditelje i djecu.',
-    description: content.description ?? '',
-    domain: content.domain ?? 'creative',
-    age_min: content.age_min ?? 2,
-    age_max: content.age_max ?? 6,
-    contentType: content.content_type,
+  const education: EventCard[] = (educationRows ?? []).map((content: Record<string, any>) => ({
+    id: String(content.id),
+    slug: String(content.slug ?? content.id),
+    title: String(content.title ?? 'Događaj'),
+    short_desc: String(content.short_description ?? content.description ?? 'Edukativni sadržaj za roditelje i djecu.'),
+    description: String(content.description ?? ''),
+    domain: String(content.domain ?? 'creative'),
+    age_min: Number(content.age_min ?? 2),
+    age_max: Number(content.age_max ?? 6),
+    contentType: content.content_type === 'webinar' ? 'webinar' : 'event',
     typeLabel: content.content_type === 'webinar'
       ? 'Webinar'
       : content.event_subtype === 'workshop'
@@ -228,35 +255,35 @@ const { data: events, pending } = await useAsyncData('events', async () => {
           ? 'Open day'
           : 'Događaj',
     is_free: content.required_tier === 'free',
-    price_km: content.required_tier === 'paid' ? 15 : content.required_tier === 'premium' ? 30 : 0,
-    location: content.content_type === 'webinar'
+    price_km: Number(content.required_tier === 'paid' ? 15 : content.required_tier === 'premium' ? 30 : 0),
+    location: String(content.content_type === 'webinar'
       ? (content.location_name || content.location_url || 'Online pristup')
-      : (content.location_name || 'Detalji lokacije po prijavi'),
+      : (content.location_name || 'Detalji lokacije po prijavi')),
     location_url: content.location_url ?? content.external_registration_url ?? null,
     starts_at: content.starts_at,
     ends_at: content.ends_at ?? content.starts_at,
-    capacity: content.capacity ?? 0,
+    capacity: Number(content.capacity ?? 0),
   }))
 
   return [...workshops, ...education]
 })
 
-const filteredEvents = computed(() => {
+const filteredEvents = computed<EventCard[]>(() => {
   let list = events.value ?? []
 
   if (activeTab.value !== 'all') {
-    list = list.filter((e: Record<string, unknown>) => e.contentType === activeTab.value)
+    list = list.filter((e) => e.contentType === activeTab.value)
   }
 
   if (filterDomain.value) {
-    list = list.filter((e: Record<string, unknown>) => e.domain === filterDomain.value)
+    list = list.filter((e) => e.domain === filterDomain.value)
   }
 
   if (filterAge.value) {
     const [minAge, maxAge] = filterAge.value.split('-').map(Number)
-    list = list.filter((e: Record<string, unknown>) => {
-      const ageMin = e.age_min as number
-      const ageMax = e.age_max as number
+    list = list.filter((e) => {
+      const ageMin = e.age_min
+      const ageMax = e.age_max
       return ageMin <= maxAge && ageMax >= minAge
     })
   }

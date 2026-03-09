@@ -83,9 +83,9 @@ const domainMeta: Record<DomainKey, { label: string; color: string; emoji: strin
   language: { label: 'Jezički', color: '#f78da7', emoji: '💬' },
 }
 
-const domainOptions = [
+const domainOptions: Array<{ label: string; value: 'all' | DomainKey }> = [
   { label: 'Sve domene', value: 'all' },
-  ...Object.entries(domainMeta).map(([key, value]) => ({ label: value.label, value: key })),
+  ...Object.entries(domainMeta).map(([key, value]) => ({ label: value.label, value: key as DomainKey })),
 ]
 
 const { data: child, pending } = await useAsyncData(`child-progress-${childId}`, async () => {
@@ -146,7 +146,9 @@ function monthKeyFromDate(date: string) {
 
 function monthLabelFromKey(key: string) {
   const [year, month] = key.split('-').map(Number)
-  return new Date(year, month - 1, 1).toLocaleDateString('bs-BA', { month: 'long', year: 'numeric' })
+  const safeYear = Number.isFinite(year) ? year : new Date().getFullYear()
+  const safeMonth = Number.isFinite(month) ? month : 1
+  return new Date(safeYear, safeMonth - 1, 1).toLocaleDateString('bs-BA', { month: 'long', year: 'numeric' })
 }
 
 const filteredMilestones = computed(() => {

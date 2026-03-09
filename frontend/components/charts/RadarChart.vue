@@ -130,7 +130,7 @@ const chartOptions = computed<ChartOptions<'radar'>>(() => ({
         color: '#374151',
         font: {
           size: 12,
-          weight: '600',
+          weight: 600,
         },
       },
     },

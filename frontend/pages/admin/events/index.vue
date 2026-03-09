@@ -166,10 +166,27 @@ useSeoMeta({ title: 'Događaji — Admin — Šarena Sfera' })
 const supabase = useSupabase()
 
 const loading = ref(true)
-const events = ref<any[]>([])
+type AdminEventRecord = {
+  id: string
+  title: string
+  slug?: string
+  starts_at: string
+  is_published: boolean
+  image_url?: string | null
+  short_desc?: string | null
+  location?: string | null
+  age_min?: number | null
+  age_max?: number | null
+  capacity?: number | null
+  domain?: string | null
+  registrations_count?: number
+  registrations?: Array<{ count?: number | null }>
+}
+
+const events = ref<AdminEventRecord[]>([])
 const currentTab = ref<'upcoming' | 'past' | 'drafts' | 'all'>('upcoming')
 
-const tabs = [
+const tabs: Array<{ key: 'upcoming' | 'past' | 'drafts' | 'all'; label: string; count: number | null }> = [
   { key: 'upcoming', label: 'Nadolazeći', count: null },
   { key: 'past', label: 'Prošli', count: null },
   { key: 'drafts', label: 'Drafts', count: null },
@@ -180,11 +197,11 @@ const filteredEvents = computed(() => {
   const now = new Date()
   switch (currentTab.value) {
     case 'upcoming':
-      return events.value.filter(e => new Date(e.starts_at) >= now && e.is_published)
+      return events.value.filter((e) => new Date(e.starts_at) >= now && e.is_published)
     case 'past':
-      return events.value.filter(e => new Date(e.starts_at) < now)
+      return events.value.filter((e) => new Date(e.starts_at) < now)
     case 'drafts':
-      return events.value.filter(e => !e.is_published)
+      return events.value.filter((e) => !e.is_published)
     case 'all':
     default:
       return events.value
@@ -249,17 +266,17 @@ async function loadEvents() {
     if (error) throw error
 
     // Count registrations
-    events.value = (data || []).map(event => ({
+    events.value = ((data || []) as AdminEventRecord[]).map((event) => ({
       ...event,
       registrations_count: event.registrations?.[0]?.count || 0,
     }))
 
     // Update tab counts
     const now = new Date()
-    tabs[0].count = events.value.filter(e => new Date(e.starts_at) >= now && e.is_published).length
-    tabs[1].count = events.value.filter(e => new Date(e.starts_at) < now).length
-    tabs[2].count = events.value.filter(e => !e.is_published).length
-    tabs[3].count = events.value.length
+    tabs[0]!.count = events.value.filter((e) => new Date(e.starts_at) >= now && e.is_published).length
+    tabs[1]!.count = events.value.filter((e) => new Date(e.starts_at) < now).length
+    tabs[2]!.count = events.value.filter((e) => !e.is_published).length
+    tabs[3]!.count = events.value.length
   } catch (err) {
     console.error('Failed to load events:', err)
   } finally {
@@ -277,7 +294,7 @@ async function togglePublish(id: string, publish: boolean) {
     if (error) throw error
 
     // Update local state
-    const event = events.value.find(e => e.id === id)
+    const event = events.value.find((entry) => entry.id === id)
     if (event) event.is_published = publish
   } catch (err) {
     console.error('Failed to toggle publish:', err)
@@ -289,7 +306,7 @@ async function duplicateEvent(id: string) {
   if (!confirm('Da li želite kopirati ovaj događaj?')) return
 
   try {
-    const original = events.value.find(e => e.id === id)
+    const original = events.value.find((entry) => entry.id === id)
     if (!original) return
 
     const { data, error } = await supabase

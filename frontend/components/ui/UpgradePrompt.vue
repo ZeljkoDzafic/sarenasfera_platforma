@@ -63,6 +63,7 @@ const props = defineProps<{
   features?: string[]
   dismissible?: boolean
   ctaLink?: string
+  hasAccess?: boolean
 }>()
 
 defineEmits<{
@@ -78,4 +79,5 @@ const requiredTierName = computed(() => {
 })
 
 const ctaLink = computed(() => props.ctaLink || '/pricing')
+const hasAccess = computed(() => props.hasAccess ?? false)
 </script>

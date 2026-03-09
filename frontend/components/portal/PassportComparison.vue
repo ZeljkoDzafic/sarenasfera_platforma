@@ -98,6 +98,17 @@ interface ScoreRecord {
   scores: Record<DomainKey, number>
 }
 
+interface ComparisonRow {
+  key: DomainKey
+  label: string
+  color: string
+  emoji: string
+  current: number
+  previous: number
+  ageAverage: number
+  change: number
+}
+
 const props = defineProps<{
   records: ScoreRecord[]
   selectedPeriod: PeriodKey
@@ -171,7 +182,7 @@ const benchmarkScores = computed(() => {
   return totals
 })
 
-const comparisonRows = computed(() => {
+const comparisonRows = computed<ComparisonRow[]>(() => {
   const current = scoreForPeriod(props.selectedPeriod)
   const previous = compareLabel.value ? scoreForPeriod(compareLabel.value) : current
   const benchmark = Object.fromEntries(benchmarkScores.value.map((item) => [item.key, item.value])) as Record<DomainKey, number>
@@ -185,13 +196,24 @@ const comparisonRows = computed(() => {
   }))
 })
 
-const biggestImprovement = computed(() => {
+const fallbackRow: ComparisonRow = {
+  key: 'emotional',
+  label: 'Emocionalni',
+  color: '#cf2e2e',
+  emoji: '❤️',
+  current: 0,
+  previous: 0,
+  ageAverage: 0,
+  change: 0,
+}
+
+const biggestImprovement = computed<ComparisonRow>(() => {
   const sorted = [...comparisonRows.value].sort((a, b) => b.change - a.change)
-  return sorted[0]
+  return sorted[0] ?? fallbackRow
 })
 
-const attentionArea = computed(() => {
+const attentionArea = computed<ComparisonRow>(() => {
   const sorted = [...comparisonRows.value].sort((a, b) => a.current - b.current || a.change - b.change)
-  return sorted[0]
+  return sorted[0] ?? fallbackRow
 })
 </script>

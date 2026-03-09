@@ -8,6 +8,11 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -16,5 +21,14 @@
     "chart.js": "^4.5.1",
     "nuxt": "^4.3.1",
     "vue-chartjs": "^5.3.3"
+  },
+  "devDependencies": {
+    "@nuxt/test-utils": "^3.9.0",
+    "@playwright/test": "^1.40.0",
+    "@vue/test-utils": "^2.4.3",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.5",
+    "happy-dom": "^12.10.3",
+    "vitest": "^3.2.4"
   }
 }
