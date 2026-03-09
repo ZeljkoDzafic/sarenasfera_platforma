@@ -12,7 +12,7 @@
     "install:frontend": "npm --prefix frontend install",
     "install:api": "python3 -m venv api/.venv && ./api/.venv/bin/pip install --upgrade pip && ./api/.venv/bin/pip install -r api/requirements.txt",
     "install:all": "npm run install:frontend && npm run install:api",
-    "dev:stack": "docker compose up -d",
+    "dev:stack": "bash ./scripts/dev-stack.sh",
     "dev:stack:down": "docker compose down",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:api": "./api/.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8080 --app-dir api",
