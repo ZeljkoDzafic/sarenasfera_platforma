@@ -146,8 +146,8 @@ const domains = [
 
 const quickActions = [
   { label: 'Dodaj dijete', icon: '👶', to: '/admin/children/new' },
-  { label: 'Nova sesija', icon: '📅', to: '/admin/sessions/new' },
-  { label: 'Opservacija', icon: '📝', to: '/admin/observe' },
+  { label: 'Novi događaj', icon: '📅', to: '/admin/events/new' },
+  { label: 'Opservacija', icon: '📝', to: '/admin/observations' },
   { label: 'Pošalji poruku', icon: '💬', to: '/admin/messages' },
 ]
 

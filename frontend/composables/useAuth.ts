@@ -16,8 +16,25 @@ const authState = reactive<AuthState>({
   loading: true,
 })
 
+let authSubscription: { unsubscribe: () => void } | null = null
+
 export function useAuth() {
   const supabase = useSupabase()
+
+  async function resolveRole(session: Session | null): Promise<UserRole | null> {
+    const metadataRole = session?.user?.app_metadata?.role as UserRole | undefined
+    if (metadataRole) return metadataRole
+
+    if (!session?.user) return null
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .maybeSingle()
+
+    return (data?.role as UserRole | undefined) ?? null
+  }
 
   // Initialize auth state
   async function init() {
@@ -26,17 +43,21 @@ export function useAuth() {
       const { data } = await supabase.auth.getSession()
       authState.session = data.session
       authState.user = data.session?.user ?? null
-      authState.role = (data.session?.user?.app_metadata?.role as UserRole) ?? null
+      authState.role = await resolveRole(data.session)
     } finally {
       authState.loading = false
     }
 
     // Listen for auth changes
-    supabase.auth.onAuthStateChange((_event, session) => {
-      authState.session = session
-      authState.user = session?.user ?? null
-      authState.role = (session?.user?.app_metadata?.role as UserRole) ?? null
-    })
+    if (!authSubscription) {
+      const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        authState.session = session
+        authState.user = session?.user ?? null
+        authState.role = await resolveRole(session)
+        authState.loading = false
+      })
+      authSubscription = listener.subscription
+    }
   }
 
   async function signIn(email: string, password: string) {
@@ -61,7 +82,10 @@ export function useAuth() {
   async function signOut() {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
-    navigateTo('/auth/login')
+    authState.session = null
+    authState.user = null
+    authState.role = null
+    return navigateTo('/auth/login')
   }
 
   async function resetPassword(email: string) {
@@ -91,7 +115,9 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    logout: signOut,
     resetPassword,
     updatePassword,
+    resolveRole,
   }
 }

@@ -35,7 +35,7 @@
             </span>
           </div>
           
-          <NuxtLink v-if="!isPioneer && slotsAvailable" to="/auth/register? Pioneer=true" class="btn-primary">
+          <NuxtLink v-if="!isPioneer && slotsAvailable" to="/auth/register?pioneer=true" class="btn-primary">
             Postanite Pionir
           </NuxtLink>
         </div>
@@ -147,7 +147,7 @@
       </ol>
       
       <div class="mt-6 flex justify-center">
-        <NuxtLink to="/auth/register? Pioneer=true" class="btn-primary text-lg px-8 py-3">
+        <NuxtLink to="/auth/register?pioneer=true" class="btn-primary text-lg px-8 py-3">
           Postanite Pionir Danas
         </NuxtLink>
       </div>

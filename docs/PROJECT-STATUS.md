@@ -49,8 +49,8 @@ The project has a strong product direction, a credible Supabase-first architectu
 ### Authentication
 
 - Auth composable and middleware exist
-- Actual auth pages are missing from `frontend/pages/auth/`
-- Redirect paths already assume auth routes exist
+- Auth pages now exist in `frontend/pages/auth/`
+- End-to-end auth flow still needs verification against a running local Supabase stack
 - Public layout and multiple public pages link to `/auth/login` and `/auth/register`
 
 ### FastAPI
@@ -70,12 +70,8 @@ The project has a strong product direction, a credible Supabase-first architectu
 
 ### Route integrity
 
-- Some routes referenced by UI are missing or likely inconsistent
-- Known examples:
-  - `/auth/login`
-  - `/auth/register`
-  - `/admin/sessions/new`
-  - `/admin/observe`
+- Several critical route mismatches have been corrected
+- Remaining route integrity work should focus on full navigation verification under real usage
 
 ## Missing Or Unverified
 
@@ -91,10 +87,10 @@ The project has a strong product direction, a credible Supabase-first architectu
 
 ## Highest-Leverage Next Steps
 
-1. Finish auth pages and verify role flows end-to-end.
+1. Verify auth and role flows end-to-end against a running local Supabase stack.
 2. Validate migrations and RLS against a fresh local Supabase instance.
 3. Replace placeholder frontend data with real queries or explicit mock boundaries.
-4. Fix route dead ends and broken CTA destinations.
+4. Continue route integrity checks under real navigation and edge cases.
 5. Expand FastAPI to the first real production use case:
    PDF reports or transactional email.
 6. Turn deployment docs into executable infrastructure and release steps.
