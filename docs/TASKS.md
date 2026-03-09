@@ -246,7 +246,7 @@
   - Print-friendly view
 - **Output:** Passport components + RadarChart
 
-### T-304: Workshop Calendar
+### T-304: Workshop Calendar ✅ DONE (Codex)
 - **Depends on:** T-300
 - **Agent scope:** Workshop schedule and materials
 - **Acceptance criteria:**
