@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:mybrightwheel.com)",
+      "WebFetch(domain:www.lillio.com)",
+      "Bash(mkdir:*)",
+      "Bash(wc:*)",
+      "Bash(mv frontend:*)",
+      "Bash(npx nuxi@latest:*)",
+      "Bash(npm install:*)",
+      "Bash(npx nuxt:*)",
+      "WebFetch(domain:www.aizdravo.com)"
+    ]
+  }
+}
