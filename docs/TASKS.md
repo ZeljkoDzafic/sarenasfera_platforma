@@ -217,7 +217,7 @@
   - Responsive grid layout
 - **Output:** `pages/portal/index.vue`, related components
 
-### T-302: Children List & Detail
+### T-302: Children List & Detail ✅ DONE (Codex)
 - **Depends on:** T-300
 - **Agent scope:** My children management
 - **Acceptance criteria:**
@@ -230,7 +230,7 @@
     - Tab: Reports (downloadable PDFs)
 - **Output:** `pages/portal/children/`
 
-### T-303: Child Passport Component
+### T-303: Child Passport Component ✅ DONE (Codex)
 - **Depends on:** T-302
 - **Agent scope:** The core feature — 6-domain development visualization
 - **Input:** `docs/arhitektura/06-child-passport.md`
