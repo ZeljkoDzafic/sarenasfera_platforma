@@ -1,5 +1,13 @@
 # Sarena Sfera Digital - Platform Architecture
 
+This folder contains both active architecture documents and historical decision records.
+
+Before using any document here, read:
+
+1. `docs/PROJECT-STATUS.md`
+2. `docs/AGENT-HANDBOOK.md`
+3. this file
+
 ## Documentation Index
 
 | # | Document | Description |
@@ -10,8 +18,8 @@
 | 04 | [Auth & Roles](04-auth-and-roles.md) | Supabase GoTrue, JWT, RBAC |
 | 05 | [API Design](05-api-design.md) | PostgREST + Python FastAPI routes |
 | 06 | [Child Passport](06-child-passport.md) | Core feature: 6 domains, scoring |
-| 07 | [Frontend Structure](07-frontend-structure.md) | ~~Vite + Alpine.js~~ (superseded by 11) |
-| 08 | [Deployment](08-deployment.md) | DigitalOcean, environments, SSL |
+| 07 | [Frontend Structure](07-frontend-structure.md) | Historical frontend concept, superseded by 11 |
+| 08 | [Deployment](08-deployment.md) | Deployment direction, partially outdated |
 | 09 | [Activity Plan](09-activity-plan.md) | 12-week MVP timeline |
 | 10 | [Competitive Analysis](10-competitive-analysis.md) | 9 competitors analyzed |
 | **11** | **[Supabase Architecture](11-supabase-architecture.md)** | **PRIMARY — Nuxt 3 + Supabase** |
@@ -40,6 +48,32 @@ DevOps:    Docker Compose (local), GitHub Actions (CI/CD)
 
 **Supabase chosen as primary architecture** for MVP. Laravel architecture
 documented as alternative for post-launch assessment. See doc 13 for comparison.
+
+## Canonical Documents
+
+Use these as the active implementation guide:
+
+- `docs/PROJECT-STATUS.md`
+- `docs/AGENT-HANDBOOK.md`
+- `docs/PRODUCTION-READINESS.md`
+- [11 - Supabase Architecture](11-supabase-architecture.md)
+- [14 - Feature Flags & Tiers](14-feature-flags-and-tiers.md)
+- [17 - Child Tracking & Education](17-child-tracking-and-education.md)
+- [18 - UI & Design Guidelines](18-ui-design-guidelines.md)
+
+## Historical / Reference Documents
+
+These are useful for context, comparison, or decision history, but should not be treated as the primary source of truth:
+
+- [07 - Frontend Structure](07-frontend-structure.md)
+- [08 - Deployment](08-deployment.md)
+- [12 - Laravel Architecture](12-laravel-architecture.md)
+- [13 - Architecture Comparison](13-architecture-comparison.md)
+- [15 - Competitive Learnings](15-competitive-learnings-aizdravo.md)
+
+## Important Status Note
+
+`docs/TASKS.md` is the delivery backlog. Some task statuses reflect planning intent from earlier iterations and must be verified against the repo before being treated as complete.
 
 ## Business Model
 

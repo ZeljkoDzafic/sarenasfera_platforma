@@ -1,5 +1,11 @@
 # 07 - Frontend Structure
 
+Historical note:
+
+- This document describes an earlier `Vite + Alpine.js` direction.
+- The active frontend architecture is Nuxt-based and documented in `11-supabase-architecture.md`.
+- Use this file only for historical context or migration reasoning.
+
 ## Stack: Vite + TypeScript + Tailwind CSS + Alpine.js
 
 Zero server dependency. Builds to static HTML/CSS/JS. Deploy anywhere.

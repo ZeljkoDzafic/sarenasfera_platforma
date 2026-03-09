@@ -120,12 +120,25 @@ CREATE TABLE IF NOT EXISTS public.pioneer_slots (
 -- Initialize pioneer slots counter
 INSERT INTO public.pioneer_slots (max_slots, used_slots) VALUES (50, 0) ON CONFLICT DO NOTHING;
 
+-- ─── Feature Interests (track user interest in coming_soon features) ──────────
+CREATE TABLE IF NOT EXISTS public.feature_interests (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id      UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  feature_key  TEXT NOT NULL,
+  created_at   TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, feature_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_feature_interests_user ON public.feature_interests(user_id);
+CREATE INDEX IF NOT EXISTS idx_feature_interests_feature ON public.feature_interests(feature_key);
+
 -- ─── RLS ──────────────────────────────────────────────────────────────────────
 ALTER TABLE public.subscription_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feature_flags      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pioneer_slots      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feature_interests  ENABLE ROW LEVEL SECURITY;
 
 -- Plans: public read
 CREATE POLICY IF NOT EXISTS "plans_public_read" ON public.subscription_plans FOR SELECT USING (is_active = true);
@@ -146,3 +159,8 @@ CREATE POLICY IF NOT EXISTS "flags_admin_all"   ON public.feature_flags FOR ALL 
 -- Pioneer slots: public read; admin updates
 CREATE POLICY IF NOT EXISTS "pioneer_public_read" ON public.pioneer_slots FOR SELECT USING (true);
 CREATE POLICY IF NOT EXISTS "pioneer_admin"       ON public.pioneer_slots FOR ALL    USING (auth.jwt()->'app_metadata'->>'role' = 'admin');
+
+-- Feature interests: users can insert their own; users see own; admin sees all
+CREATE POLICY IF NOT EXISTS "interests_user_insert" ON public.feature_interests FOR INSERT WITH CHECK (user_id = auth.uid());
+CREATE POLICY IF NOT EXISTS "interests_own_read"    ON public.feature_interests FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY IF NOT EXISTS "interests_admin_read"  ON public.feature_interests FOR SELECT USING (auth.jwt()->'app_metadata'->>'role' = 'admin');

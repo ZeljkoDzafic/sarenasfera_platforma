@@ -1,11 +1,29 @@
 # Sarena Sfera Platform - Task Breakdown
 
+Status note:
+
+- This file is the backlog and delivery map.
+- It is not the canonical source of truth for current implementation status.
+- Always verify against the repository and `docs/PROJECT-STATUS.md`.
+- If a task says `DONE` but the code or routes do not exist, treat it as `partial` until verified.
+
 ## Strategy
 
 **Architecture:** Supabase (primary). Laravel alternative assessed post-launch.
 **Frontend:** Nuxt 3 (Vue 3 + TypeScript + Tailwind CSS)
 **Backend:** Self-hosted Supabase + Python FastAPI
 **Each task is self-contained** — designed for independent AI agent pickup.
+
+## Status Semantics
+
+- `DONE`
+  - Implemented and verified in repo.
+- `PARTIAL`
+  - Some work exists, but acceptance criteria are not fully met.
+- `PLANNED`
+  - Not yet implemented.
+
+When updating this file, prefer accuracy over optimism.
 
 ### Launch Strategy: Staged Rollout
 - Platform launches in sections, not all at once
@@ -671,7 +689,7 @@
 > These tasks enable the soft-launch strategy. Build BEFORE or IN PARALLEL with Phases 3-4.
 > Full spec: `docs/arhitektura/14-feature-flags-and-tiers.md`
 
-### T-810: Feature Flags — Database & Composable
+### ✅ T-810: Feature Flags — Database & Composable — DONE (Claude)
 - **Depends on:** T-102, T-200
 - **Agent scope:** Feature flag system (backend + frontend)
 - **Acceptance criteria:**
@@ -783,7 +801,7 @@
   - Success email: workshop details + account credentials
 - **Output:** `pages/events/[slug]/register.vue`, server API route for registration logic
 
-### T-832: Event Management — Admin
+### ✅ T-832: Event Management — Admin — DONE (Claude)
 - **Depends on:** T-400, T-830
 - **Agent scope:** Admin creates/manages public events
 - **Acceptance criteria:**
@@ -813,7 +831,7 @@
   - If free tier: teaser "Nadogradite za uvid u opservacije"
 - **Output:** Server logic + email template
 
-### T-840: Pricing Page
+### ✅ T-840: Pricing Page — DONE (Claude)
 - **Depends on:** T-100, T-820
 - **Agent scope:** Public pricing page showing tiers
 - **Acceptance criteria:**
@@ -997,7 +1015,7 @@
 > for online courses, events, and resources.
 > Full spec: `docs/arhitektura/17-child-tracking-and-education.md`
 
-### T-1000: Developmental Milestones — Database & Seed
+### ✅ T-1000: Developmental Milestones — Database & Seed — DONE (Claude)
 - **Depends on:** T-102
 - **Agent scope:** Milestone tracking system (schema + seed data)
 - **Acceptance criteria:**

@@ -10,7 +10,11 @@
       "Bash(npx nuxi@latest:*)",
       "Bash(npm install:*)",
       "Bash(npx nuxt:*)",
-      "WebFetch(domain:www.aizdravo.com)"
+      "WebFetch(domain:www.aizdravo.com)",
+      "Bash(git pull:*)",
+      "Bash(git stash push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)"
     ]
   }
 }

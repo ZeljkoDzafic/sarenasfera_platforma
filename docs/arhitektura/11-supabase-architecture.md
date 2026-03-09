@@ -1,5 +1,12 @@
 # 11 - Supabase Architecture (Primary)
 
+This is the primary architecture document for active implementation.
+
+Read together with:
+
+- `docs/PROJECT-STATUS.md`
+- `docs/PRODUCTION-READINESS.md`
+
 ## Architecture Overview
 
 ```
@@ -115,6 +122,47 @@ frontend/
     ├── database.ts          # Generated Supabase types
     └── index.ts             # App-level types
 ```
+
+## Current Repo Snapshot
+
+The repository already contains a meaningful Nuxt application, but not every item in the ideal structure above is fully implemented.
+
+### Confirmed present
+
+- public pages for `program`, `blog`, `resources`, `contact`, `pricing`, `referrals`, `events`, `quiz`
+- portal pages under `pages/portal/`
+- admin pages under `pages/admin/`
+- composables:
+  - `useSupabase`
+  - `useAuth`
+  - `useFeatures`
+  - `useTier`
+- route middleware:
+  - `auth`
+  - `guest`
+  - `role`
+
+### Confirmed missing or incomplete
+
+- `pages/auth/*` routes are not yet present in the repo
+- FastAPI is still a minimal service skeleton
+- some frontend pages still use placeholder/demo content
+- deployment automation is not production-complete
+
+## Delivery Principle
+
+Use this document as the target architecture, but validate implementation status against `docs/PROJECT-STATUS.md` before assuming a subsystem already exists.
+
+## Production Priorities
+
+If the goal is fast production readiness, prioritize work in this order:
+
+1. auth flows and role correctness
+2. RLS verification and migration reliability
+3. public acquisition funnel
+4. parent portal core value
+5. staff/admin operational workflows
+6. monitoring, backups, deployment, rollback
 
 ### 2. Supabase Backend
 

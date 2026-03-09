@@ -1,5 +1,11 @@
 # 08 - Deployment & Infrastructure
 
+Status note:
+
+- This document contains useful deployment direction, but parts of it still reflect the old static-frontend assumption.
+- The active frontend is Nuxt, not static Vite pages.
+- Treat this file as a reference draft until deployment is codified and aligned with the current repo.
+
 ## Infrastructure Overview
 
 ```

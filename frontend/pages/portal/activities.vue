@@ -1,121 +1,45 @@
 <template>
   <div class="space-y-6">
-    <section class="card">
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">Kućne aktivnosti</h1>
-          <p class="text-sm text-gray-600">Aktivnosti koje su predložili edukatori za rad kod kuće.</p>
-        </div>
-
-        <div class="grid gap-2 sm:grid-cols-2">
-          <label class="text-xs font-semibold text-gray-600">
-            Domena
-            <select v-model="selectedDomain" class="input mt-1 min-h-11 py-2">
-              <option value="all">Sve domene</option>
-              <option v-for="domain in domainOptions" :key="domain.value" :value="domain.value">{{ domain.label }}</option>
-            </select>
-          </label>
-          <label class="text-xs font-semibold text-gray-600">
-            Status
-            <select v-model="selectedStatus" class="input mt-1 min-h-11 py-2">
-              <option value="all">Sve</option>
-              <option value="pending">Na čekanju</option>
-              <option value="done">Završeno</option>
-            </select>
-          </label>
-        </div>
+    <!-- Header with tabs -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="font-display text-2xl font-bold text-gray-900">Aktivnosti</h1>
+        <p class="text-sm text-gray-500 mt-1">Zadane aktivnosti i biblioteka aktivnosti</p>
       </div>
-    </section>
-
-    <section class="grid gap-4 lg:grid-cols-2">
-      <article v-for="activity in filteredActivities" :key="activity.id" class="card">
-        <div class="mb-3 flex items-start justify-between gap-3">
-          <div>
-            <h2 class="text-lg font-bold text-gray-900">{{ activity.title }}</h2>
-            <p class="text-sm text-gray-700">{{ activity.description }}</p>
-          </div>
-          <span class="badge" :class="activity.completed ? 'badge-free' : domainBadgeClass(activity.domain)">
-            {{ activity.completed ? 'Završeno' : domainLabel(activity.domain) }}
-          </span>
-        </div>
-
-        <div class="rounded-xl bg-gray-50 p-3 text-sm text-gray-700">
-          <p class="font-semibold text-gray-800">Uputstvo</p>
-          <p class="mt-1">{{ activity.instructions }}</p>
-        </div>
-
-        <div class="mt-3 grid gap-2 sm:grid-cols-2">
-          <label class="text-xs font-semibold text-gray-600">
-            Bilješka roditelja
-            <textarea
-              v-model="activity.note"
-              rows="3"
-              class="input mt-1"
-              placeholder="Napišite kratak utisak..."
-            />
-          </label>
-          <label class="text-xs font-semibold text-gray-600">
-            Link fotografije (opciono)
-            <input
-              v-model="activity.photoUrl"
-              type="url"
-              class="input mt-1"
-              placeholder="https://..."
-            >
-          </label>
-        </div>
-
-        <div class="mt-4 flex flex-wrap gap-2">
-          <button
-            class="btn-success"
-            :disabled="activity.completed"
-            @click="markCompleted(activity.id)"
-          >
-            Označi kao završeno
-          </button>
-          <button
-            class="btn-secondary"
-            :disabled="!activity.completed"
-            @click="markPending(activity.id)"
-          >
-            Vrati na čekanje
-          </button>
-        </div>
-      </article>
-    </section>
-
-    <section class="card">
-      <h2 class="text-lg font-bold text-gray-900">Historija aktivnosti</h2>
-      <ul class="mt-3 space-y-2 text-sm text-gray-700">
-        <li v-for="item in completedHistory" :key="item.id" class="rounded-xl bg-gray-50 p-3">
-          <p class="font-semibold">{{ item.title }} • {{ domainLabel(item.domain) }}</p>
-          <p>Završeno: {{ item.completedAt }}</p>
-          <p v-if="item.note">Bilješka: {{ item.note }}</p>
-        </li>
-        <li v-if="completedHistory.length === 0" class="rounded-xl bg-gray-50 p-3 text-gray-600">
-          Još nema završenih aktivnosti.
-        </li>
-      </ul>
-    </section>
-    <div>
-      <h1 class="font-display text-2xl font-bold text-gray-900">Kućne aktivnosti</h1>
-      <p class="text-sm text-gray-500 mt-1">Aktivnosti zadane od voditelja za rad kod kuće</p>
+      <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+          :class="activeTab === 'assigned' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+          @click="activeTab = 'assigned'"
+        >
+          Moje Aktivnosti
+        </button>
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+          :class="activeTab === 'library' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+          @click="activeTab = 'library'"
+        >
+          Biblioteka
+        </button>
+      </div>
     </div>
 
-    <!-- Filter bar -->
-    <div class="flex flex-wrap gap-2">
-      <button
-        v-for="filter in filters"
-        :key="filter.key"
-        class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all border-2"
-        :class="activeFilter === filter.key
-          ? 'border-primary-500 bg-primary-50 text-primary-700'
-          : 'border-gray-200 text-gray-600 hover:border-gray-300'"
-        @click="activeFilter = filter.key"
-      >
-        {{ filter.label }}
-      </button>
-    </div>
+    <!-- Assigned activities tab -->
+    <div v-if="activeTab === 'assigned'" class="space-y-6">
+      <!-- Filter bar -->
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="filter in filters"
+          :key="filter.key"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all border-2"
+          :class="activeFilter === filter.key
+            ? 'border-primary-500 bg-primary-50 text-primary-700'
+            : 'border-gray-200 text-gray-600 hover:border-gray-300'"
+          @click="activeFilter = filter.key"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
 
     <!-- Loading -->
     <div v-if="pending" class="space-y-3">
@@ -202,6 +126,116 @@
       </h3>
       <p class="text-gray-600 text-sm">Voditelji će vam zadati aktivnosti nakon radionice.</p>
     </div>
+    </div>
+
+    <!-- Library tab -->
+    <div v-else-if="activeTab === 'library'" class="space-y-6">
+      <!-- Search and filters -->
+      <div class="card p-4">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <!-- Search -->
+          <div class="relative flex-1 max-w-md">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              v-model="librarySearch"
+              type="text"
+              class="input pl-10"
+              placeholder="Pretraži aktivnosti..."
+            />
+          </div>
+          
+          <!-- Filter buttons -->
+          <div class="flex flex-wrap gap-2">
+            <select v-model="libraryFilters.domain" class="input text-sm">
+              <option value="">Sve domene</option>
+              <option value="emotional">Emocionalni</option>
+              <option value="social">Socijalni</option>
+              <option value="creative">Kreativni</option>
+              <option value="cognitive">Kognitivni</option>
+              <option value="motor">Motorički</option>
+              <option value="language">Jezički</option>
+            </select>
+            
+            <select v-model="libraryFilters.type" class="input text-sm">
+              <option value="">Svi tipovi</option>
+              <option value="indoor">Unutra</option>
+              <option value="outdoor">Vani</option>
+              <option value="creative">Kreativno</option>
+              <option value="physical">Fizički</option>
+              <option value="sensory">Senzorno</option>
+            </select>
+            
+            <select v-model="libraryFilters.duration" class="input text-sm">
+              <option value="">Sva trajanja</option>
+              <option value="short">&lt; 15 min</option>
+              <option value="medium">15-30 min</option>
+              <option value="long">&gt; 30 min</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity library grid -->
+      <div v-if="filteredLibraryActivities.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          v-for="activity in filteredLibraryActivities"
+          :key="activity.id"
+          class="card hover:shadow-lg transition-all group cursor-pointer"
+          @click="openActivityDetail(activity)"
+        >
+          <!-- Domain color header -->
+          <div
+            class="h-24 rounded-t-xl flex items-center justify-center text-4xl"
+            :style="{ backgroundColor: getDomainColor(activity.domain) + '20' }"
+          >
+            {{ getDomainEmoji(activity.domain) }}
+          </div>
+          
+          <div class="p-4">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="font-bold text-gray-900 line-clamp-2">{{ activity.title }}</h3>
+              <span
+                class="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-600 flex-shrink-0"
+              >
+                {{ activity.difficulty || 'Srednje' }}
+              </span>
+            </div>
+            
+            <p class="text-sm text-gray-600 line-clamp-2 mb-3">{{ activity.description }}</p>
+            
+            <!-- Meta info -->
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ activity.duration || '15-30 min' }}
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0z" />
+                </svg>
+                {{ activity.age_range || '3-6 god' }}
+              </span>
+            </div>
+            
+            <!-- View button -->
+            <button class="btn-primary w-full mt-3 text-sm group-hover:shadow-colorful">
+              Pogledaj aktivnost
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else class="card text-center py-14">
+        <div class="text-5xl mb-4">🔍</div>
+        <h3 class="font-display font-bold text-xl text-gray-900 mb-2">Nema pronađenih aktivnosti</h3>
+        <p class="text-gray-600 text-sm">Pokušajte promijeniti filtere ili pretragu.</p>
+      </div>
+    </div>
 
     <!-- Feedback Modal -->
     <Teleport to="body">
@@ -241,119 +275,13 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'portal' })
-
-type DomainKey = 'emotional' | 'social' | 'creative' | 'cognitive' | 'motor' | 'language'
-type StatusFilter = 'all' | 'pending' | 'done'
-
-interface ActivityItem {
-  id: string
-  title: string
-  description: string
-  domain: DomainKey
-  instructions: string
-  completed: boolean
-  completedAt: string | null
-  note: string
-  photoUrl: string
-}
-
-const selectedDomain = ref<'all' | DomainKey>('all')
-const selectedStatus = ref<StatusFilter>('all')
-
-const activities = ref<ActivityItem[]>([
-  {
-    id: 'a1',
-    title: 'Čitanje priče o emocijama',
-    description: 'Zajednički pročitajte kratku priču i razgovarajte o osjećajima likova.',
-    domain: 'emotional',
-    instructions: 'Postavite 3 pitanja: Kako se lik osjećao? Zašto? Šta bismo mi uradili?',
-    completed: false,
-    completedAt: null,
-    note: '',
-    photoUrl: '',
-  },
-  {
-    id: 'a2',
-    title: 'Sortiranje predmeta po boji',
-    description: 'Koristite igračke ili kućne predmete za sortiranje u 4 grupe boja.',
-    domain: 'cognitive',
-    instructions: 'Nakon sortiranja pitajte dijete da objasni pravilo koje je koristilo.',
-    completed: true,
-    completedAt: '09.03.2026',
-    note: 'Samostalno prepoznaje većinu boja.',
-    photoUrl: '',
-  },
-  {
-    id: 'a3',
-    title: 'Mini poligon ravnoteže',
-    description: 'Napravite jednostavan poligon sa jastucima i trakama na podu.',
-    domain: 'motor',
-    instructions: 'Dijete prelazi poligon 3 puta i svaki put mjerite sigurnost pokreta.',
-    completed: false,
-    completedAt: null,
-    note: '',
-    photoUrl: '',
-  },
-])
-
-const domainOptions = [
-  { value: 'emotional', label: 'Emocionalni' },
-  { value: 'social', label: 'Socijalni' },
-  { value: 'creative', label: 'Kreativni' },
-  { value: 'cognitive', label: 'Kognitivni' },
-  { value: 'motor', label: 'Motorički' },
-  { value: 'language', label: 'Jezički' },
-] as const
-
-const domainLabel = (domain: DomainKey) => {
-  const found = domainOptions.find((item) => item.value === domain)
-  return found?.label ?? domain
-}
-
-const domainBadgeClass = (domain: DomainKey) => {
-  const map: Record<DomainKey, string> = {
-    emotional: 'domain-bg-emotional text-domain-emotional',
-    social: 'domain-bg-social text-domain-social',
-    creative: 'domain-bg-creative text-domain-creative',
-    cognitive: 'domain-bg-cognitive text-domain-cognitive',
-    motor: 'domain-bg-motor text-domain-motor',
-    language: 'domain-bg-language text-domain-language',
-  }
-  return map[domain]
-}
-
-const filteredActivities = computed(() => {
-  return activities.value.filter((activity) => {
-    const domainMatch = selectedDomain.value === 'all' || activity.domain === selectedDomain.value
-    const statusMatch =
-      selectedStatus.value === 'all'
-      || (selectedStatus.value === 'pending' && !activity.completed)
-      || (selectedStatus.value === 'done' && activity.completed)
-
-    return domainMatch && statusMatch
-  })
-})
-
-const completedHistory = computed(() => activities.value.filter((activity) => activity.completed))
-
-const markCompleted = (id: string) => {
-  const target = activities.value.find((item) => item.id === id)
-  if (!target) return
-  target.completed = true
-  target.completedAt = new Date().toLocaleDateString('bs-BA')
-}
-
-const markPending = (id: string) => {
-  const target = activities.value.find((item) => item.id === id)
-  if (!target) return
-  target.completed = false
-  target.completedAt = null
 definePageMeta({ middleware: 'auth', layout: 'portal' })
-useSeoMeta({ title: 'Kućne aktivnosti — Šarena Sfera' })
+useSeoMeta({ title: 'Aktivnosti — Šarena Sfera' })
 
 const supabase = useSupabase()
 const { user } = useAuth()
+
+const activeTab = ref('assigned')
 
 const activeFilter = ref('pending')
 const filters = [
@@ -361,6 +289,14 @@ const filters = [
   { key: 'pending',   label: 'Na čekanju' },
   { key: 'completed', label: 'Završene' },
 ]
+
+// Library state
+const librarySearch = ref('')
+const libraryFilters = ref({
+  domain: '',
+  type: '',
+  duration: '',
+})
 
 const { data: activities, pending, refresh } = await useAsyncData('portal-activities', async () => {
   if (!user.value) return []
@@ -374,6 +310,100 @@ const { data: activities, pending, refresh } = await useAsyncData('portal-activi
     .eq('parent_id', user.value.id)
     .order('assigned_at', { ascending: false })
   return data ?? []
+})
+
+// Library activities (sample data for now)
+const libraryActivities = ref([
+  {
+    id: '1',
+    title: 'Igranje uloga: Prodavnica',
+    description: 'Dijete glumi prodavača, uči brojanje i socijalne vještine kroz igru.',
+    domain: 'social',
+    type: 'indoor',
+    duration: 'medium',
+    age_range: '4-6 god',
+    difficulty: 'Lahko',
+  },
+  {
+    id: '2',
+    title: 'Crtanje uz muziku',
+    description: 'Razvoj kreativnosti i motorike kroz crtanje uz različite muzičke žanrove.',
+    domain: 'creative',
+    type: 'creative',
+    duration: 'medium',
+    age_range: '3-6 god',
+    difficulty: 'Lahko',
+  },
+  {
+    id: '3',
+    title: 'Poligon s preprekama',
+    description: 'Kreirajte poligon s jastucima i stolicama za razvoj motorike.',
+    domain: 'motor',
+    type: 'physical',
+    duration: 'long',
+    age_range: '3-6 god',
+    difficulty: 'Srednje',
+  },
+  {
+    id: '4',
+    title: 'Prepoznavanje emocija',
+    description: 'Igra s karticama emocija za prepoznavanje i imenovanje osjećaja.',
+    domain: 'emotional',
+    type: 'indoor',
+    duration: 'short',
+    age_range: '3-5 god',
+    difficulty: 'Lahko',
+  },
+  {
+    id: '5',
+    title: 'Slaganje po bojama',
+    description: 'Sortiranje predmeta po bojama za razvoj kognitivnih vještina.',
+    domain: 'cognitive',
+    type: 'indoor',
+    duration: 'short',
+    age_range: '2-4 god',
+    difficulty: 'Lahko',
+  },
+  {
+    id: '6',
+    title: 'Priča bez riječi',
+    description: 'Izražavanje kroz geste i mimiku za razvoj jezičkih vještina.',
+    domain: 'language',
+    type: 'creative',
+    duration: 'medium',
+    age_range: '4-6 god',
+    difficulty: 'Srednje',
+  },
+])
+
+const filteredLibraryActivities = computed(() => {
+  let filtered = libraryActivities.value
+  
+  // Search filter
+  if (librarySearch.value) {
+    const search = librarySearch.value.toLowerCase()
+    filtered = filtered.filter(a =>
+      a.title.toLowerCase().includes(search) ||
+      a.description.toLowerCase().includes(search)
+    )
+  }
+  
+  // Domain filter
+  if (libraryFilters.value.domain) {
+    filtered = filtered.filter(a => a.domain === libraryFilters.value.domain)
+  }
+  
+  // Type filter
+  if (libraryFilters.value.type) {
+    filtered = filtered.filter(a => a.type === libraryFilters.value.type)
+  }
+  
+  // Duration filter
+  if (libraryFilters.value.duration) {
+    filtered = filtered.filter(a => a.duration === libraryFilters.value.duration)
+  }
+  
+  return filtered
 })
 
 const filteredActivities = computed(() => {
@@ -424,5 +454,10 @@ async function submitFeedback() {
   }).eq('id', feedbackActivity.value.id)
   feedbackActivity.value = null
   await refresh()
+}
+
+function openActivityDetail(activity: any) {
+  // TODO: Open activity detail modal or navigate to detail page
+  console.log('Opening activity:', activity)
 }
 </script>
