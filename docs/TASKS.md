@@ -185,7 +185,7 @@
 
 ## PHASE 3: Parent Portal
 
-### T-300: Portal Layout
+### T-300: Portal Layout ✅ DONE (Codex)
 - **Depends on:** T-202
 - **Agent scope:** Portal shell with navigation
 - **Acceptance criteria:**
@@ -198,7 +198,7 @@
   - Active route highlighting
 - **Output:** `layouts/portal.vue`, `components/portal/Sidebar.vue`, `components/portal/TopNav.vue`
 
-### T-301: Parent Dashboard
+### T-301: Parent Dashboard ✅ DONE (Codex)
 - **Depends on:** T-300
 - **Agent scope:** Main portal dashboard
 - **Acceptance criteria:**
