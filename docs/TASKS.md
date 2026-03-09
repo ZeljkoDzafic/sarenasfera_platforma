@@ -59,6 +59,7 @@
 - **Test:** `docker compose up -d` → all services healthy
 
 ### T-102: Database Migrations (SQL)
+- **Status:** ✅ DONE (Claude — `supabase/migrations/010-018_*.sql`)
 - **Depends on:** T-101
 - **Agent scope:** Convert schema doc to executable SQL migrations
 - **Input:** `docs/arhitektura/03-database-schema.md` (61 tables)
@@ -82,6 +83,7 @@
 - **Test:** Run against local PostgreSQL, no errors
 
 ### T-103: Seed Data
+- **Status:** ✅ DONE (Claude — `supabase/migrations/018_seed.sql`)
 - **Depends on:** T-102
 - **Agent scope:** Create seed data for development/demo
 - **Acceptance criteria:**
@@ -246,7 +248,12 @@
   - Print-friendly view
 - **Output:** Passport components + RadarChart
 
+<<<<<<< claude/review-tasks-documentation-Dj0Ne
+### T-304: Workshop Calendar
+- **Status:** ✅ DONE (Claude — `pages/portal/calendar.vue`)
+=======
 ### T-304: Workshop Calendar ✅ DONE (Codex)
+>>>>>>> main
 - **Depends on:** T-300
 - **Agent scope:** Workshop schedule and materials
 - **Acceptance criteria:**
@@ -260,6 +267,7 @@
 - **Output:** `pages/portal/workshops.vue`, calendar components
 
 ### T-305: Home Activities
+- **Status:** ✅ DONE (Claude — `pages/portal/activities.vue`)
 - **Depends on:** T-300
 - **Agent scope:** Activities parents can do at home
 - **Acceptance criteria:**
@@ -272,6 +280,7 @@
 - **Output:** `pages/portal/activities.vue`
 
 ### T-306: Photo Gallery
+- **Status:** ✅ DONE (Claude — `pages/portal/gallery.vue`)
 - **Depends on:** T-300
 - **Agent scope:** Child photos from observations
 - **Acceptance criteria:**
@@ -283,6 +292,7 @@
 - **Output:** `pages/portal/gallery.vue`
 
 ### T-307: Profile Settings
+- **Status:** ✅ DONE (Claude — `pages/portal/settings.vue`)
 - **Depends on:** T-300
 - **Agent scope:** Parent profile management
 - **Acceptance criteria:**
@@ -299,6 +309,7 @@
 ## PHASE 4: Admin Panel
 
 ### T-400: Admin Layout
+- **Status:** ✅ DONE (layouts/admin.vue already exists)
 - **Depends on:** T-202
 - **Agent scope:** Admin shell with navigation
 - **Acceptance criteria:**
@@ -310,6 +321,7 @@
 - **Output:** `layouts/admin.vue`, admin nav components
 
 ### T-401: Admin Dashboard
+- **Status:** ✅ DONE (Claude — `pages/admin/index.vue`)
 - **Depends on:** T-400
 - **Agent scope:** Admin overview with key metrics
 - **Acceptance criteria:**
