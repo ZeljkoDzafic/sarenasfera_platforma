@@ -24,13 +24,13 @@
           v-for="ws in workshops"
           :key="ws.id"
           class="card-domain cursor-pointer hover:shadow-md transition-shadow"
-          :style="{ borderColor: getDomainColor(ws.domains?.[0]) }"
+          :style="{ borderColor: getDomainColor(firstDomain(ws.domains)) }"
           @click="router.push(`/admin/workshops/${ws.id}`)"
         >
           <div class="flex items-start gap-3">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"
-              :style="{ backgroundColor: getDomainColor(ws.domains?.[0]) }">
-              {{ getDomainEmoji(ws.domains?.[0]) }}
+              :style="{ backgroundColor: getDomainColor(firstDomain(ws.domains)) }">
+              {{ getDomainEmoji(firstDomain(ws.domains)) }}
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-start justify-between gap-2">
@@ -71,9 +71,9 @@
             <span class="text-xs opacity-80">{{ new Date(session.scheduled_date).toLocaleDateString('bs-BA', { month: 'short' }) }}</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-gray-900 truncate">{{ session.workshops?.title ?? 'Radionica' }}</p>
+            <p class="font-semibold text-gray-900 truncate">{{ firstWorkshopTitle(session.workshops) }}</p>
             <p class="text-xs text-gray-500">
-              {{ session.groups?.name }} • {{ session.scheduled_time_start?.slice(0,5) }}
+              {{ firstGroupName(session.groups) }} • {{ session.scheduled_time_start?.slice(0,5) }}
             </p>
           </div>
           <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
@@ -84,7 +84,7 @@
               'bg-gray-100 text-gray-400': session.status === 'cancelled',
             }"
           >
-            {{ { scheduled: 'Planirana', in_progress: 'U toku', completed: 'Završena', cancelled: 'Otkazana' }[session.status] ?? session.status }}
+            {{ sessionStatusLabel(session.status) }}
           </span>
         </div>
       </div>
@@ -232,5 +232,27 @@ async function createTemplate() {
   creating.value = false
   Object.assign(tForm, { title: '', description: '', duration_minutes: 60, month_number: 1, domains: [], home_activity_title: '', home_activity_description: '' })
   await refreshTemplates()
+}
+
+function firstDomain(domains?: string[] | null): string | undefined {
+  return domains?.[0]
+}
+
+function firstWorkshopTitle(workshops?: Array<{ title: string | null }> | null): string {
+  return workshops?.[0]?.title ?? 'Radionica'
+}
+
+function firstGroupName(groups?: Array<{ name: string | null }> | null): string {
+  return groups?.[0]?.name ?? 'Bez grupe'
+}
+
+function sessionStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    scheduled: 'Planirana',
+    in_progress: 'U toku',
+    completed: 'Završena',
+    cancelled: 'Otkazana',
+  }
+  return labels[status] ?? status
 }
 </script>

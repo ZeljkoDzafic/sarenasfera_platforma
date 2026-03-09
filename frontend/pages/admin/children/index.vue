@@ -68,10 +68,10 @@
               <span v-if="child.date_of_birth" class="text-gray-400 text-xs ml-1">({{ getAge(child.date_of_birth) }}g)</span>
             </td>
             <td class="px-4 py-3 text-gray-500 hidden md:table-cell">
-              {{ child.child_groups?.[0]?.groups?.name ?? '—' }}
+              {{ firstGroupName(child.child_groups) }}
             </td>
             <td class="px-4 py-3 text-gray-500 hidden lg:table-cell">
-              {{ child.parent_children?.[0]?.profiles?.full_name ?? '—' }}
+              {{ firstParentName(child.parent_children) }}
             </td>
             <td class="px-4 py-3">
               <span
@@ -111,12 +111,21 @@ const search = ref('')
 const filterGroup = ref('')
 const filterStatus = ref('')
 
+interface ChildListRecord {
+  id: string
+  full_name: string
+  date_of_birth: string | null
+  is_active: boolean
+  child_groups?: Array<{ groups?: Array<{ id: string; name: string | null }> | null }> | null
+  parent_children?: Array<{ profiles?: Array<{ full_name: string | null; email: string | null }> | null }> | null
+}
+
 const { data: groups } = await useAsyncData('admin-groups-list', async () => {
   const { data } = await supabase.from('groups').select('id, name').eq('is_active', true).order('name')
   return data ?? []
 })
 
-const { data: children, pending } = await useAsyncData('admin-children', async () => {
+const { data: children, pending } = await useAsyncData<ChildListRecord[]>('admin-children', async () => {
   const { data } = await supabase
     .from('children')
     .select(`
@@ -128,16 +137,16 @@ const { data: children, pending } = await useAsyncData('admin-children', async (
   return data ?? []
 })
 
-const filteredChildren = computed(() => {
+const filteredChildren = computed<ChildListRecord[]>(() => {
   let list = children.value ?? []
   if (search.value) {
     const q = search.value.toLowerCase()
     list = list.filter((c: { full_name: string }) => c.full_name.toLowerCase().includes(q))
   }
   if (filterGroup.value) {
-    list = list.filter((c: Record<string, unknown>) => {
-      const groups = c.child_groups as Array<{ groups: { id: string } | null }> | null
-      return groups?.some(cg => cg.groups?.id === filterGroup.value)
+    list = list.filter((c) => {
+      const groups = c.child_groups as Array<{ groups?: Array<{ id: string }> | null }> | null | undefined
+      return groups?.some((cg) => cg.groups?.some((group) => group.id === filterGroup.value))
     })
   }
   if (filterStatus.value === 'active') list = list.filter((c: { is_active: boolean }) => c.is_active)
@@ -155,5 +164,13 @@ function getAge(dob: string): number {
   let age = today.getFullYear() - birth.getFullYear()
   if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--
   return age
+}
+
+function firstGroupName(relations?: ChildListRecord['child_groups']): string {
+  return relations?.[0]?.groups?.[0]?.name ?? '—'
+}
+
+function firstParentName(relations?: ChildListRecord['parent_children']): string {
+  return relations?.[0]?.profiles?.[0]?.full_name ?? '—'
 }
 </script>

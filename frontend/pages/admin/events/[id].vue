@@ -207,7 +207,7 @@ const eventId = route.params.id as string
 
 const loading = ref(true)
 const submitting = ref(false)
-const event = ref<any>(null)
+const event = ref<Record<string, any> | null>(null)
 
 const form = reactive({
   title: '',
@@ -250,7 +250,7 @@ async function loadEvent() {
     form.slug = data.slug
     form.short_desc = data.short_desc || ''
     form.description = data.description || ''
-    form.date = startsAt.toISOString().split('T')[0]
+    form.date = startsAt.toISOString().split('T')[0] || ''
     form.start_time = startsAt.toTimeString().slice(0, 5)
     form.end_time = endsAt.toTimeString().slice(0, 5)
     form.location = data.location

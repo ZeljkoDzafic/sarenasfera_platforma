@@ -51,10 +51,10 @@
           <div
             v-else
             class="w-full md:w-40 h-32 rounded-xl bg-gradient-to-br flex-shrink-0"
-            :style="{ background: `linear-gradient(135deg, ${getDomainColor(event.domain)}, ${getDomainColor(event.domain)}aa)` }"
+            :style="{ background: `linear-gradient(135deg, ${getDomainColor(event.domain ?? null)}, ${getDomainColor(event.domain ?? null)}aa)` }"
           >
             <div class="w-full h-full flex items-center justify-center text-white text-4xl">
-              {{ getDomainIcon(event.domain) }}
+              {{ getDomainIcon(event.domain ?? null) }}
             </div>
           </div>
 
@@ -169,7 +169,7 @@ const loading = ref(true)
 type AdminEventRecord = {
   id: string
   title: string
-  slug?: string
+  slug: string
   starts_at: string
   is_published: boolean
   image_url?: string | null
@@ -309,12 +309,12 @@ async function duplicateEvent(id: string) {
     const original = events.value.find((entry) => entry.id === id)
     if (!original) return
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('events')
       .insert({
         ...original,
         id: undefined,
-        slug: `${original.slug}-copy-${Date.now()}`,
+        slug: `${original.slug || original.id}-copy-${Date.now()}`,
         title: `${original.title} (Kopija)`,
         is_published: false,
         created_at: undefined,

@@ -45,11 +45,11 @@
           >
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-primary-100 flex items-center justify-center font-bold text-primary-600 text-xs">
-                {{ child.children?.full_name?.[0] }}
+                {{ firstRosterChildName(child.children)[0] }}
               </div>
               <div>
-                <p class="text-sm font-semibold text-gray-900">{{ child.children?.full_name }}</p>
-                <p class="text-xs text-gray-400">{{ child.children?.date_of_birth ? getAge(child.children.date_of_birth) + ' god.' : '' }}</p>
+                <p class="text-sm font-semibold text-gray-900">{{ firstRosterChildName(child.children) }}</p>
+                <p class="text-xs text-gray-400">{{ firstRosterChildDob(child.children) ? getAge(firstRosterChildDob(child.children)!) + ' god.' : '' }}</p>
               </div>
             </div>
             <button class="text-xs text-brand-red hover:underline" @click="removeChild(child.child_id)">Ukloni</button>
@@ -64,10 +64,10 @@
         <div v-if="staff.length > 0" class="space-y-2">
           <div v-for="s in staff" :key="s.id" class="flex items-center gap-3 py-2">
             <div class="w-8 h-8 rounded-xl bg-brand-blue/10 flex items-center justify-center font-bold text-brand-blue text-xs">
-              {{ s.profiles?.full_name?.[0] ?? '?' }}
+              {{ firstStaffName(s.profiles)[0] ?? '?' }}
             </div>
             <div>
-              <p class="text-sm font-semibold text-gray-900">{{ s.profiles?.full_name }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ firstStaffName(s.profiles) }}</p>
               <p class="text-xs text-gray-400 capitalize">{{ s.role }}</p>
             </div>
           </div>
@@ -85,7 +85,7 @@
               <span class="text-xs opacity-80">{{ new Date(s.scheduled_date).toLocaleDateString('bs-BA', { month: 'short' }) }}</span>
             </div>
             <div>
-              <p class="text-sm font-semibold text-gray-900">{{ s.workshops?.title ?? 'Radionica' }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ firstUpcomingWorkshopTitle(s.workshops) }}</p>
               <p class="text-xs text-gray-400">{{ s.scheduled_time_start?.slice(0,5) }}</p>
             </div>
           </div>
@@ -196,5 +196,21 @@ function getAge(dob: string): number {
   let age = today.getFullYear() - birth.getFullYear()
   if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--
   return age
+}
+
+function firstRosterChildName(children: Array<{ full_name: string | null; date_of_birth: string | null }> | null | undefined): string {
+  return children?.[0]?.full_name ?? '—'
+}
+
+function firstRosterChildDob(children: Array<{ full_name: string | null; date_of_birth: string | null }> | null | undefined): string | null {
+  return children?.[0]?.date_of_birth ?? null
+}
+
+function firstStaffName(profiles: Array<{ full_name: string | null }> | null | undefined): string {
+  return profiles?.[0]?.full_name ?? '—'
+}
+
+function firstUpcomingWorkshopTitle(workshops: Array<{ title: string | null }> | null | undefined): string {
+  return workshops?.[0]?.title ?? 'Radionica'
 }
 </script>

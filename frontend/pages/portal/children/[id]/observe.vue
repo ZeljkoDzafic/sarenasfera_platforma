@@ -176,11 +176,11 @@ const { data: submissionRows, refresh } = await useAsyncData(`parent-observe-sub
 
 const submissions = computed(() => {
   return (submissionRows.value ?? []).map((item: Record<string, any>) => {
-    const domain = domains.find((entry) => entry.key === item.domain) ?? domains[0]
+    const domain = domains.find((entry) => entry.key === item.domain) || domains[0]
     return {
       id: item.id as string,
-      domainLabel: domain.label,
-      domainColor: domain.color,
+      domainLabel: domain?.label ?? 'Kreativni',
+      domainColor: domain?.color ?? '#9b51e0',
       content: item.content as string,
       photoUrl: item.photo_url as string | null,
       status: item.status as 'pending' | 'approved' | 'rejected',

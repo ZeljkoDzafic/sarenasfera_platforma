@@ -13,7 +13,7 @@
           <select v-model="selectedSession" class="input text-sm">
             <option value="">— odaberite sesiju —</option>
             <option v-for="s in sessions" :key="s.id" :value="s.id">
-              {{ formatDate(s.scheduled_date) }} — {{ s.workshops?.title ?? 'Radionica' }} ({{ s.groups?.name }})
+              {{ formatDate(s.scheduled_date) }} — {{ firstWorkshopTitle(s.workshops) }} ({{ firstGroupName(s.groups) }})
             </option>
           </select>
         </div>
@@ -116,6 +116,13 @@ interface AttendanceRow {
   attendance_id?: string
 }
 
+interface SessionRecord {
+  id: string
+  scheduled_date: string
+  workshops?: Array<{ title: string | null }> | null
+  groups?: Array<{ id: string; name: string | null }> | null
+}
+
 const attendanceList = ref<AttendanceRow[]>([])
 
 const statusOptions = [
@@ -126,7 +133,7 @@ const statusOptions = [
 ]
 
 // Upcoming + recent sessions
-const { data: sessions } = await useAsyncData('admin-sessions-att', async () => {
+const { data: sessions } = await useAsyncData<SessionRecord[]>('admin-sessions-att', async () => {
   const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10)
   const twoWeeksAhead = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
   const { data } = await supabase
@@ -143,8 +150,8 @@ watch(selectedSession, async (sessionId) => {
   attendanceLoading.value = true
 
   // Find group for this session
-  const session = sessions.value?.find((s: { id: string }) => s.id === sessionId) as Record<string, unknown> | undefined
-  const groupId = (session?.groups as { id: string } | null)?.id
+  const session = sessions.value?.find((s) => s.id === sessionId)
+  const groupId = session?.groups?.[0]?.id
 
   if (!groupId) { attendanceLoading.value = false; return }
 
@@ -162,11 +169,11 @@ watch(selectedSession, async (sessionId) => {
 
   const existingMap = new Map((existing ?? []).map((a: { child_id: string; id: string; status: string; notes?: string }) => [a.child_id, a]))
 
-  attendanceList.value = (groupChildren ?? []).map((gc: { child_id: string; children: { full_name: string } | null }) => {
+  attendanceList.value = (groupChildren ?? []).map((gc: { child_id: string; children: Array<{ full_name: string | null }> | null }) => {
     const att = existingMap.get(gc.child_id)
     return {
       child_id: gc.child_id,
-      name: gc.children?.full_name ?? '—',
+      name: gc.children?.[0]?.full_name ?? '—',
       status: att?.status ?? 'present',
       note: att?.notes ?? '',
       attendance_id: att?.id,
@@ -204,5 +211,13 @@ async function saveAll() {
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('bs-BA', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function firstWorkshopTitle(workshops?: Array<{ title: string | null }> | null): string {
+  return workshops?.[0]?.title ?? 'Radionica'
+}
+
+function firstGroupName(groups?: Array<{ name: string | null }> | null): string {
+  return groups?.[0]?.name ?? '—'
 }
 </script>

@@ -42,10 +42,10 @@
             class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50"
           >
             <div class="w-8 h-8 rounded-xl bg-primary-100 flex items-center justify-center font-bold text-primary-600 text-sm">
-              {{ lead.name?.[0] ?? lead.email[0].toUpperCase() }}
+              {{ leadInitial(lead) }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 truncate">{{ lead.name ?? lead.email }}</p>
+              <p class="text-sm font-semibold text-gray-900 truncate">{{ lead.name ?? lead.email ?? 'Lead' }}</p>
               <p class="text-xs text-gray-400">{{ lead.source }} • {{ formatDate(lead.created_at) }}</p>
             </div>
           </div>
@@ -70,8 +70,8 @@
               <span class="text-xs opacity-80 leading-none">{{ formatMonthShort(session.scheduled_date) }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 truncate">{{ session.workshops?.title ?? 'Radionica' }}</p>
-              <p class="text-xs text-gray-500">{{ session.groups?.name }} • {{ session.scheduled_time_start?.slice(0,5) }}</p>
+              <p class="text-sm font-semibold text-gray-900 truncate">{{ session.workshops?.[0]?.title ?? 'Radionica' }}</p>
+              <p class="text-xs text-gray-500">{{ session.groups?.[0]?.name ?? 'Bez grupe' }} • {{ session.scheduled_time_start?.slice(0,5) }}</p>
             </div>
           </div>
         </div>
@@ -125,8 +125,14 @@ const supabase = useSupabase()
 const statsLoading = ref(true)
 const sessionsLoading = ref(true)
 const stats = ref<Record<string, number | string>>({})
-const recentLeads = ref<Array<Record<string, string>>>([])
-const upcomingSessions = ref<Array<Record<string, unknown>>>([])
+const recentLeads = ref<Array<{ id: string; email?: string; name?: string | null; source?: string | null; created_at: string }>>([])
+const upcomingSessions = ref<Array<{
+  id: string
+  scheduled_date: string
+  scheduled_time_start?: string | null
+  workshops?: Array<{ title: string | null }> | null
+  groups?: Array<{ name: string | null }> | null
+}>>([])
 
 const kpis = [
   { key: 'total_children', label: 'Ukupno djece', icon: '👶', color: '#9b51e0', trend: 5 },
@@ -193,5 +199,11 @@ function formatDate(iso: string): string {
 function formatDayNum(iso: string): string { return new Date(iso).getDate().toString() }
 function formatMonthShort(iso: string): string {
   return new Date(iso).toLocaleDateString('bs-BA', { month: 'short' }).replace('.', '')
+}
+
+function leadInitial(lead: { name?: string | null; email?: string }): string {
+  if (lead.name?.[0]) return lead.name[0]
+  if (lead.email?.[0]) return lead.email[0].toUpperCase()
+  return 'L'
 }
 </script>

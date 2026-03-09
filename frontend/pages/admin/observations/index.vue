@@ -45,7 +45,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
-              <p class="text-sm font-semibold text-gray-900">{{ obs.children?.full_name }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ firstChildName(obs.children) }}</p>
               <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(obs.observed_at ?? obs.created_at) }}</span>
             </div>
             <p class="text-sm text-gray-600 mt-1">{{ obs.content }}</p>
@@ -53,7 +53,7 @@
               <span class="text-xs font-semibold px-2 py-0.5 rounded-full text-white" :style="{ backgroundColor: getDomainColor(obs.domain) }">
                 {{ getDomainLabel(obs.domain) }}
               </span>
-              <span v-if="obs.profiles?.full_name" class="text-xs text-gray-400">• {{ obs.profiles.full_name }}</span>
+              <span v-if="firstProfileName(obs.profiles)" class="text-xs text-gray-400">• {{ firstProfileName(obs.profiles) }}</span>
               <span v-if="obs.is_highlight" class="text-xs">⭐ Istaknuto</span>
             </div>
           </div>
@@ -271,11 +271,13 @@ const selectedChildAgeMonths = computed(() => {
 
 const availableMilestones = computed(() => {
   if (!form.child_id || !form.domain || selectedChildAgeMonths.value === null) return []
+  const ageMonths = selectedChildAgeMonths.value
+  if (ageMonths === null) return []
 
   return (milestoneCatalog.value ?? []).filter((milestone: Record<string, any>) => {
     return milestone.domain === form.domain
-      && milestone.age_range_min <= selectedChildAgeMonths.value
-      && milestone.age_range_max >= selectedChildAgeMonths.value
+      && milestone.age_range_min <= ageMonths
+      && milestone.age_range_max >= ageMonths
   })
 })
 
@@ -354,5 +356,13 @@ async function deleteObs(id: string) {
 function formatDate(iso?: string): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('bs-BA', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function firstChildName(children: Array<{ id?: string; full_name?: string | null }> | null | undefined): string {
+  return children?.[0]?.full_name ?? 'Dijete'
+}
+
+function firstProfileName(profiles: Array<{ full_name?: string | null }> | null | undefined): string {
+  return profiles?.[0]?.full_name ?? ''
 }
 </script>

@@ -55,12 +55,12 @@
         </div>
         <div class="card text-center">
           <div class="text-3xl mb-2">👥</div>
-          <div class="font-bold text-gray-900">{{ child.child_groups?.[0]?.groups?.name ?? '—' }}</div>
+          <div class="font-bold text-gray-900">{{ firstGroupName(child.child_groups) }}</div>
           <div class="text-xs text-gray-400">Grupa</div>
         </div>
         <div class="card text-center">
           <div class="text-3xl mb-2">👨‍👩‍👧</div>
-          <div class="font-bold text-gray-900 text-sm truncate">{{ child.parent_children?.[0]?.profiles?.full_name ?? '—' }}</div>
+          <div class="font-bold text-gray-900 text-sm truncate">{{ firstParentName(child.parent_children) }}</div>
           <div class="text-xs text-gray-400">Roditelj</div>
         </div>
         <div class="card text-center">
@@ -103,7 +103,7 @@
             </div>
             <div class="flex-1">
               <p class="text-sm text-gray-700">{{ obs.content }}</p>
-              <p class="text-xs text-gray-400 mt-1">{{ formatDate(obs.observed_at ?? obs.created_at) }} • {{ obs.profiles?.full_name }}</p>
+              <p class="text-xs text-gray-400 mt-1">{{ formatDate(obs.observed_at ?? obs.created_at) }} • {{ firstProfileName(obs.profiles) }}</p>
             </div>
           </div>
         </div>
@@ -135,8 +135,8 @@
         <div class="mt-4 space-y-2">
           <div v-for="att in attendance" :key="att.id" class="flex items-center justify-between py-2 border-b border-gray-50">
             <div>
-              <p class="text-sm font-semibold text-gray-900">{{ att.sessions?.workshops?.title ?? 'Radionica' }}</p>
-              <p class="text-xs text-gray-400">{{ formatDate(att.sessions?.scheduled_date) }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ firstSessionWorkshopTitle(att.sessions) }}</p>
+              <p class="text-xs text-gray-400">{{ formatDate(firstSessionDate(att.sessions)) }}</p>
             </div>
             <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
               :class="{
@@ -146,7 +146,7 @@
                 'bg-gray-100 text-gray-400': att.status === 'excused',
               }"
             >
-              {{ { present: 'Prisutan', absent: 'Odsutan', late: 'Zakasnio', excused: 'Opravdano' }[att.status] ?? att.status }}
+              {{ attendanceStatusLabel(att.status) }}
             </span>
           </div>
           <p v-if="attendance.length === 0" class="text-center text-gray-400 text-sm py-6">Nema evidencije prisustva.</p>
@@ -262,6 +262,36 @@ const attendance = computed(() => attendanceData.value ?? [])
 function getScore(domain: string): number {
   const latest = assessments.value.find((a: Record<string, unknown>) => a.domain === domain)
   return latest ? Number(latest.score) : 0
+}
+
+function firstGroupName(relations: Array<{ groups?: Array<{ name: string | null }> | null }> | null | undefined): string {
+  return relations?.[0]?.groups?.[0]?.name ?? '—'
+}
+
+function firstParentName(relations: Array<{ profiles?: Array<{ full_name: string | null; email: string | null }> | null }> | null | undefined): string {
+  return relations?.[0]?.profiles?.[0]?.full_name ?? '—'
+}
+
+function firstProfileName(relations: Array<{ full_name: string | null }> | null | undefined): string {
+  return relations?.[0]?.full_name ?? '—'
+}
+
+function firstSessionWorkshopTitle(relations: Array<{ scheduled_date: string | null; workshops?: Array<{ title: string | null }> | null }> | null | undefined): string {
+  return relations?.[0]?.workshops?.[0]?.title ?? 'Radionica'
+}
+
+function firstSessionDate(relations: Array<{ scheduled_date: string | null; workshops?: Array<{ title: string | null }> | null }> | null | undefined): string {
+  return relations?.[0]?.scheduled_date ?? new Date().toISOString()
+}
+
+function attendanceStatusLabel(status: string | null): string {
+  const labels: Record<string, string> = {
+    present: 'Prisutan',
+    absent: 'Odsutan',
+    late: 'Zakasnio',
+    excused: 'Opravdano',
+  }
+  return status ? (labels[status] ?? status) : '—'
 }
 
 async function saveEdits() {

@@ -1,5 +1,6 @@
 // test/setup.ts
 import { config } from '@vue/test-utils'
+import { vi } from 'vitest'
 
 // Global mocks for Nuxt composables
 config.global.mocks = {

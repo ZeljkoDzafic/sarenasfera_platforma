@@ -45,8 +45,8 @@
         :active-domain="activeDomain"
         :status-filter="statusFilter"
         :domain-options="domainOptions"
-        @update:active-domain="activeDomain = $event"
-        @update:status-filter="statusFilter = $event"
+        @update:active-domain="activeDomain = $event as 'all' | DomainKey"
+        @update:status-filter="statusFilter = $event as 'all' | 'achieved' | 'emerging'"
       />
     </FeatureGate>
   </div>
@@ -146,8 +146,8 @@ function monthKeyFromDate(date: string) {
 
 function monthLabelFromKey(key: string) {
   const [year, month] = key.split('-').map(Number)
-  const safeYear = Number.isFinite(year) ? year : new Date().getFullYear()
-  const safeMonth = Number.isFinite(month) ? month : 1
+  const safeYear = Number.isFinite(year) ? Number(year) : new Date().getFullYear()
+  const safeMonth = Number.isFinite(month) ? Number(month) : 1
   return new Date(safeYear, safeMonth - 1, 1).toLocaleDateString('bs-BA', { month: 'long', year: 'numeric' })
 }
 

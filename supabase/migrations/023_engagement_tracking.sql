@@ -4,17 +4,19 @@
 
 -- ─── Badges System ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.badges (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  key             TEXT UNIQUE NOT NULL,           -- 'pioneer', 'active_parent', 'ambassador'
-  name            TEXT NOT NULL,
-  description     TEXT,
-  icon            TEXT,                            -- emoji or icon name
-  type            TEXT NOT NULL CHECK (type IN ('parent', 'child', 'milestone')),
-  tier_required   TEXT CHECK (tier_required IN ('free', 'paid', 'premium')),
-  criteria_json   JSONB DEFAULT '{}',              -- achievement criteria
-  sort_order      INTEGER DEFAULT 0,
-  is_active       BOOLEAN DEFAULT true,
-  created_at      TIMESTAMPTZ DEFAULT now()
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  key              TEXT UNIQUE NOT NULL,           -- 'pioneer', 'active_parent', 'ambassador'
+  name             TEXT NOT NULL,
+  description      TEXT,
+  icon_url         TEXT,                            -- emoji or icon name
+  badge_type       TEXT NOT NULL CHECK (badge_type IN ('parent', 'child', 'milestone')),
+  tier_required    TEXT CHECK (tier_required IN ('free', 'paid', 'premium')),
+  criteria_json    JSONB DEFAULT '{}',              -- achievement criteria
+  requirement_type  TEXT,                            -- e.g., 'workshops', 'activities', 'forum_posts'
+  requirement_count INTEGER,                         -- e.g., 10, 25, 50
+  sort_order       INTEGER DEFAULT 0,
+  is_active        BOOLEAN DEFAULT true,
+  created_at       TIMESTAMPTZ DEFAULT now()
 );
 
 -- User-earned badges
@@ -32,26 +34,26 @@ CREATE INDEX IF NOT EXISTS idx_user_badges_earned ON public.user_badges(earned_a
 
 -- ─── Certificates System ───────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.certificates (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  child_id        UUID REFERENCES public.children(id) ON DELETE CASCADE,
-  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-  type            TEXT NOT NULL CHECK (type IN (
-                    'program_completion', 'domain_mastery', 'attendance_milestone',
-                    'parent_achievement', 'custom'
-                  )),
-  title           TEXT NOT NULL,
-  description     TEXT,
-  domain          TEXT CHECK (domain IN ('emotional','social','creative','cognitive','motor','language')),
-  milestone_value INTEGER,                         -- e.g., 25, 50, 75, 96 workshops
-  issued_at       TIMESTAMPTZ DEFAULT now(),
-  pdf_url         TEXT,                            -- generated PDF link
-  is_published    BOOLEAN DEFAULT true,
-  created_at      TIMESTAMPTZ DEFAULT now()
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  child_id         UUID REFERENCES public.children(id) ON DELETE CASCADE,
+  user_id          UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  certificate_type TEXT NOT NULL CHECK (certificate_type IN (
+                     'program_completion', 'domain_mastery', 'attendance_milestone',
+                     'parent_achievement', 'custom'
+                   )),
+  title            TEXT NOT NULL,
+  description      TEXT,
+  domain           TEXT CHECK (domain IN ('emotional','social','creative','cognitive','motor','language')),
+  milestone_value  INTEGER,                         -- e.g., 25, 50, 75, 96 workshops
+  issued_date      TIMESTAMPTZ DEFAULT now(),
+  pdf_url          TEXT,                            -- generated PDF link
+  is_published     BOOLEAN DEFAULT true,
+  created_at       TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_certificates_child ON public.certificates(child_id);
 CREATE INDEX IF NOT EXISTS idx_certificates_user ON public.certificates(user_id);
-CREATE INDEX IF NOT EXISTS idx_certificates_type ON public.certificates(type);
+CREATE INDEX IF NOT EXISTS idx_certificates_type ON public.certificates(certificate_type);
 
 -- ─── Engagement Tracking ───────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.engagement_events (
@@ -90,7 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_engagement_scores_points ON public.user_engagemen
 CREATE INDEX IF NOT EXISTS idx_engagement_scores_streak ON public.user_engagement_scores(current_streak);
 
 -- ─── Seed: Default Badges ──────────────────────────────────────────────────────
-INSERT INTO public.badges (key, name, description, icon, type, tier_required, criteria_json, sort_order) VALUES
+INSERT INTO public.badges (key, name, description, icon_url, badge_type, tier_required, criteria_json, sort_order) VALUES
 -- Parent Badges
 ('pioneer', 'Roditelj Pionir', 'Jedan od prvih 50 roditelja na platformi', '🎖️', 'parent', 'free', '{"is_pioneer": true}', 1),
 ('active_parent', 'Aktivni Roditelj', 'Završeno 10+ kućnih aktivnosti', '⭐', 'parent', 'paid', '{"home_activities": 10}', 2),

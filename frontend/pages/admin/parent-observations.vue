@@ -165,7 +165,7 @@ const filteredItems = computed(() => {
     if (domainFilter.value !== 'all' && item.domain !== domainFilter.value) return false
     return true
   }).map((item: Record<string, any>) => {
-    const domain = domains.find((entry) => entry.key === item.domain) ?? domains[0]
+    const domain = domains.find((entry) => entry.key === item.domain) || domains[0]
     return {
       id: item.id as string,
       childId: item.child_id as string,
@@ -173,8 +173,8 @@ const filteredItems = computed(() => {
       parentId: item.parent_id as string,
       parentName: item.parent?.full_name ?? item.parent?.email ?? 'Roditelj',
       domain: item.domain as DomainKey,
-      domainLabel: domain.label,
-      domainColor: domain.color,
+      domainLabel: domain?.label ?? 'Kreativni',
+      domainColor: domain?.color ?? '#9b51e0',
       content: item.content as string,
       photoUrl: item.photo_url as string | null,
       status: item.status as ReviewStatus,

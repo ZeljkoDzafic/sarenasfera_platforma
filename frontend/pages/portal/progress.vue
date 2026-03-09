@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-6">
     <!-- Feature Gate for Paid Tier -->
-    <FeatureGate feature-key="parent_progress_tracking" min-tier="paid">
+    <FeatureGate required-tier="paid">
       <template #locked>
         <UpgradeBanner
+          tier-name="paid"
           title="Pratite svoj napredak"
-          description="Nadogradite na Osnovni plan da vidite vaš angažman, osvojene bedževe i statistike aktivnosti."
-          cta-text="Nadogradi na Osnovni"
-          cta-link="/portal/subscription"
+          message="Nadogradite na Osnovni plan da vidite vaš angažman, osvojene bedževe i statistike aktivnosti."
+          :features="['Praćenje angažmana i poena', 'Bedževi i postignuća', 'Statistike aktivnosti']"
         />
       </template>
 
