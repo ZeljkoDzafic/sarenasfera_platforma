@@ -185,7 +185,7 @@
 
 ## PHASE 3: Parent Portal
 
-### T-300: Portal Layout
+### T-300: Portal Layout ✅ DONE (Codex)
 - **Depends on:** T-202
 - **Agent scope:** Portal shell with navigation
 - **Acceptance criteria:**
@@ -198,7 +198,7 @@
   - Active route highlighting
 - **Output:** `layouts/portal.vue`, `components/portal/Sidebar.vue`, `components/portal/TopNav.vue`
 
-### T-301: Parent Dashboard
+### T-301: Parent Dashboard ✅ DONE (Codex)
 - **Depends on:** T-300
 - **Agent scope:** Main portal dashboard
 - **Acceptance criteria:**
@@ -211,7 +211,7 @@
   - Responsive grid layout
 - **Output:** `pages/portal/index.vue`, related components
 
-### T-302: Children List & Detail
+### T-302: Children List & Detail ✅ DONE (Codex)
 - **Depends on:** T-300
 - **Agent scope:** My children management
 - **Acceptance criteria:**
@@ -224,7 +224,7 @@
     - Tab: Reports (downloadable PDFs)
 - **Output:** `pages/portal/children/`
 
-### T-303: Child Passport Component
+### T-303: Child Passport Component ✅ DONE (Codex)
 - **Depends on:** T-302
 - **Agent scope:** The core feature — 6-domain development visualization
 - **Input:** `docs/arhitektura/06-child-passport.md`
