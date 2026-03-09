@@ -1,0 +1,26 @@
+{
+  "name": "sarenasfera-platforma",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "setup:local": "bash ./scripts/setup-local.sh",
+    "verify:config": "bash ./scripts/verify-config.sh",
+    "install:frontend": "npm --prefix frontend install",
+    "install:api": "python3 -m venv api/.venv && ./api/.venv/bin/pip install --upgrade pip && ./api/.venv/bin/pip install -r api/requirements.txt",
+    "install:all": "npm run install:frontend && npm run install:api",
+    "dev:stack": "docker compose up -d",
+    "dev:stack:down": "docker compose down",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:api": "./api/.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8080 --app-dir api",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:prod": "docker compose --env-file .env.production -f docker-compose.prod.yml build",
+    "publish:prod": "docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build",
+    "logs": "docker compose logs -f",
+    "logs:prod": "docker compose --env-file .env.production -f docker-compose.prod.yml logs -f"
+  }
+}
