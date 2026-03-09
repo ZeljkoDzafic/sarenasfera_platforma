@@ -30,6 +30,7 @@
 ## PHASE 1: Project Scaffolding & DevOps
 
 ### T-100: Initialize Nuxt 3 Project
+- **Status:** ✅ DONE
 - **Depends on:** Nothing
 - **Agent scope:** Create Nuxt 3 project in `frontend/`
 - **Acceptance criteria:**
@@ -43,6 +44,7 @@
 - **Output:** `frontend/` directory with working `npm run dev`
 
 ### T-101: Docker Compose — Local Supabase
+- **Status:** ✅ DONE
 - **Depends on:** Nothing
 - **Agent scope:** Create Docker setup for local Supabase
 - **Acceptance criteria:**
@@ -98,6 +100,7 @@
 - **Output:** `supabase/seed.sql`
 
 ### T-104: GitHub Actions CI/CD
+- **Status:** ✅ DONE
 - **Depends on:** T-100
 - **Agent scope:** Set up CI/CD pipeline
 - **Acceptance criteria:**
@@ -114,6 +117,7 @@
 - **Output:** `.github/workflows/*.yml`
 
 ### T-105: Environment & Config
+- **Status:** ✅ DONE
 - **Depends on:** T-100, T-101
 - **Agent scope:** Environment files and configuration
 - **Acceptance criteria:**
@@ -129,6 +133,7 @@
 ## PHASE 2: Authentication & Authorization
 
 ### T-200: Supabase Client Composable
+- **Status:** ✅ DONE
 - **Depends on:** T-100, T-101
 - **Agent scope:** Create Nuxt composable for Supabase
 - **Acceptance criteria:**
@@ -156,6 +161,7 @@
 - **Output:** `pages/auth/*.vue`
 
 ### T-202: Auth Middleware
+- **Status:** ✅ DONE
 - **Depends on:** T-200
 - **Agent scope:** Route protection middleware
 - **Acceptance criteria:**
@@ -506,6 +512,7 @@
 - **Output:** `pages/index.vue`
 
 ### T-601: Program Page
+- **Status:** ✅ DONE (Claude — `pages/program.vue`)
 - **Depends on:** T-100
 - **Agent scope:** Program overview
 - **Acceptance criteria:**
@@ -517,6 +524,7 @@
 - **Output:** `pages/program.vue`
 
 ### T-602: Blog
+- **Status:** ✅ DONE (Claude — `pages/blog/index.vue`, `pages/blog/[slug].vue`)
 - **Depends on:** T-100
 - **Agent scope:** Blog with SSR for SEO
 - **Acceptance criteria:**
@@ -528,6 +536,7 @@
 - **Output:** `pages/blog/`
 
 ### T-603: Contact & Resources
+- **Status:** ✅ DONE (Claude — `pages/contact.vue`, `pages/resources.vue`)
 - **Depends on:** T-100
 - **Agent scope:** Contact form + downloadable resources
 - **Acceptance criteria:**
@@ -594,6 +603,7 @@
 > Style: Colorful ("sarene"), rounded corners, soft shadows, playful but professional
 
 ### T-790: Brand Assets & Fonts Setup
+- **Status:** ✅ DONE
 - **Depends on:** T-100
 - **Agent scope:** Set up logo, favicon, fonts, and brand foundation
 - **Acceptance criteria:**
@@ -729,6 +739,7 @@
 - **Output:** `pages/admin/subscriptions.vue`
 
 ### T-830: Public Events Page
+- **Status:** ✅ DONE (Claude — `pages/events/index.vue`, `pages/events/[slug].vue`, `supabase/migrations/001_events.sql`)
 - **Depends on:** T-100
 - **Agent scope:** Public workshop/event listing (SSR, no auth)
 - **Acceptance criteria:**
@@ -814,6 +825,7 @@
 > These features drive acquisition, retention, and upsell.
 
 ### T-900: Development Quiz (Lead Generation) — CRITICAL
+- **Status:** ✅ DONE (Claude — `pages/quiz/index.vue`, `supabase/migrations/002_quiz.sql`)
 - **Depends on:** T-100
 - **Agent scope:** Public quiz that profiles a child's development and captures leads
 - **Acceptance criteria:**
