@@ -3,6 +3,7 @@ Email service using Resend API.
 Handles transactional emails for registration, password reset, events, etc.
 """
 
+import html
 import resend
 import logging
 from typing import Optional
@@ -18,6 +19,10 @@ class EmailService:
         self.settings = settings
         resend.api_key = settings.resend_api_key
         self.from_email = settings.resend_from_email
+
+    @staticmethod
+    def _escape(value: str) -> str:
+        return html.escape(value, quote=True)
 
     async def send_registration_email(
         self,
@@ -138,11 +143,15 @@ class EmailService:
         magic_link: Optional[str] = None,
     ) -> str:
         """Render registration email HTML."""
+        safe_parent_name = self._escape(parent_name)
+        safe_child_name = self._escape(child_name)
+        safe_login_url = self._escape(login_url)
         magic_section = ""
         if magic_link:
+            safe_magic_link = self._escape(magic_link)
             magic_section = f"""
             <p style="margin: 20px 0;">
-              <a href="{magic_link}"
+              <a href="{safe_magic_link}"
                  style="display: inline-block; background: #9b51e0; color: white; padding: 12px 24px;
                         text-decoration: none; border-radius: 8px; font-weight: bold;">
                 Prijavite se direktno
@@ -150,7 +159,7 @@ class EmailService:
             </p>
             <p style="color: #666; font-size: 14px;">
               Ili kopirajte link: <br>
-              <code style="background: #f5f5f5; padding: 4px 8px; border-radius: 4px;">{magic_link}</code>
+              <code style="background: #f5f5f5; padding: 4px 8px; border-radius: 4px;">{safe_magic_link}</code>
             </p>
             """
 
@@ -173,11 +182,11 @@ class EmailService:
             <!-- Body -->
             <div style="padding: 40px 30px;">
               <p style="font-size: 16px; color: #333; margin: 0 0 20px 0;">
-                Poštovani/a <strong>{parent_name}</strong>,
+                Poštovani/a <strong>{safe_parent_name}</strong>,
               </p>
 
               <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                Hvala što ste se pridružili Šarenoj Sferi sa <strong>{child_name}</strong>!
+                Hvala što ste se pridružili Šarenoj Sferi sa <strong>{safe_child_name}</strong>!
                 Mi smo oduševljeni da budemo dio razvojnog putovanja vašeg djeteta.
               </p>
 
@@ -211,7 +220,7 @@ class EmailService:
             <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="color: #999; font-size: 12px; margin: 0;">
                 © 2026 Šarena Sfera • Sarajevo, BiH<br>
-                <a href="{login_url}" style="color: #9b51e0; text-decoration: none;">sarenasfera.com</a>
+                <a href="{safe_login_url}" style="color: #9b51e0; text-decoration: none;">sarenasfera.com</a>
               </p>
             </div>
           </div>
@@ -230,6 +239,12 @@ class EmailService:
         confirmation_url: Optional[str] = None,
     ) -> str:
         """Render event registration confirmation email HTML."""
+        safe_parent_name = self._escape(parent_name)
+        safe_child_name = self._escape(child_name)
+        safe_event_title = self._escape(event_title)
+        safe_event_date = self._escape(event_date)
+        safe_event_time = self._escape(event_time)
+        safe_event_location = self._escape(event_location)
         return f"""
         <!DOCTYPE html>
         <html>
@@ -247,19 +262,19 @@ class EmailService:
 
             <div style="padding: 40px 30px;">
               <p style="font-size: 16px; color: #333; margin: 0 0 20px 0;">
-                Poštovani/a <strong>{parent_name}</strong>,
+                Poštovani/a <strong>{safe_parent_name}</strong>,
               </p>
 
               <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                Vaša prijava za <strong>{child_name}</strong> je uspješno zaprimljena!
+                Vaša prijava za <strong>{safe_child_name}</strong> je uspješno zaprimljena!
               </p>
 
               <div style="background: #f0f9ff; border-left: 4px solid #0693e3; padding: 20px; margin: 30px 0; border-radius: 8px;">
-                <h2 style="margin: 0 0 15px 0; color: #0693e3; font-size: 20px;">{event_title}</h2>
+                <h2 style="margin: 0 0 15px 0; color: #0693e3; font-size: 20px;">{safe_event_title}</h2>
                 <p style="margin: 5px 0; color: #555; font-size: 15px;">
-                  <strong>📅 Datum:</strong> {event_date}<br>
-                  <strong>⏰ Vrijeme:</strong> {event_time}<br>
-                  <strong>📍 Lokacija:</strong> {event_location}
+                  <strong>📅 Datum:</strong> {safe_event_date}<br>
+                  <strong>⏰ Vrijeme:</strong> {safe_event_time}<br>
+                  <strong>📍 Lokacija:</strong> {safe_event_location}
                 </p>
               </div>
 
@@ -287,6 +302,7 @@ class EmailService:
 
     def _render_password_reset_template(self, reset_link: str) -> str:
         """Render password reset email HTML."""
+        safe_reset_link = self._escape(reset_link)
         return f"""
         <!DOCTYPE html>
         <html>
@@ -312,7 +328,7 @@ class EmailService:
               </p>
 
               <p style="margin: 30px 0;">
-                <a href="{reset_link}"
+                <a href="{safe_reset_link}"
                    style="display: inline-block; background: #cf2e2e; color: white; padding: 14px 28px;
                           text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
                   Resetuj Lozinku
@@ -327,7 +343,7 @@ class EmailService:
               <p style="font-size: 14px; color: #999; margin-top: 30px;">
                 Link možete i kopirati:<br>
                 <code style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-size: 12px;
-                             word-break: break-all; display: inline-block; margin-top: 10px;">{reset_link}</code>
+                             word-break: break-all; display: inline-block; margin-top: 10px;">{safe_reset_link}</code>
               </p>
             </div>
 

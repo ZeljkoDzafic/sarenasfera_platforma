@@ -44,9 +44,14 @@ services:
     environment:
       - ENVIRONMENT=production
       - SUPABASE_URL=http://kong:8000
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${NUXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_KEY}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - RESEND_API_KEY=${RESEND_API_KEY}
+      - RESEND_FROM_EMAIL=${EMAIL_FROM}
       - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGINS=["https://platforma.sarenasfera.com"]
+      - LOG_LEVEL=INFO
     depends_on:
       - kong
     networks:
@@ -106,7 +111,7 @@ services:
       - GOTRUE_JWT_EXP=3600
       - GOTRUE_SITE_URL=https://platforma.sarenasfera.com
       - GOTRUE_URI_ALLOW_LIST=https://platforma.sarenasfera.com
-      - GOTRUE_MAILER_AUTOCONFIRM=true
+      - GOTRUE_MAILER_AUTOCONFIRM=false
       - GOTRUE_EXTERNAL_EMAIL_ENABLED=true
     networks:
       - sarenasfera-network
@@ -219,13 +224,7 @@ services:
       - "8000:8000"
       - "8443:8443"
     environment:
-      - KONG_DATABASE=postgres
-      - KONG_PG_HOST=db
-      - KONG_PG_PORT=5432
-      - KONG_PG_USER=postgres
-      - KONG_PG_PASSWORD=${POSTGRES_PASSWORD}
-      - KONG_PG_DATABASE=kong
-      - KONG_CASSANDRA_CONTACT_POINTS=
+      - KONG_DATABASE=off
       - KONG_PROXY_ACCESS_LOG=/dev/stdout
       - KONG_ADMIN_ACCESS_LOG=/dev/stdout
       - KONG_PROXY_ERROR_LOG=/dev/stderr
@@ -234,7 +233,7 @@ services:
       - KONG_ADMIN_GUI_URL=http://localhost:8002
       - KONG_DECLARATIVE_CONFIG=/var/lib/kong/kong.yml
     volumes:
-      - ./docker/kong/kong.yml:/var/lib/kong/kong.yml:ro
+      - ./docker/kong/kong.prod.yml:/var/lib/kong/kong.yml:ro
     networks:
       - sarenasfera-network
 

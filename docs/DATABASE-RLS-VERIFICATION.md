@@ -1,206 +1,146 @@
-# Database Migration and RLS Verification Report
+# Database RLS Verification
 
-**Date:** 2026-03-09
-**Status:** ✅ VERIFIED — Database migrations baseline established
-**Reviewed by:** Claude (CLAUDE-1 task)
+Date: 2026-03-09
 
----
+This document defines the minimum verification needed before production launch.
 
-## Migration Files Status
+## Goal
 
-### ✅ Migration Sequence
+Prove that the current migrations enforce the intended access model for:
 
-All migrations are sequentially numbered with no gaps:
+- anonymous user
+- parent
+- staff
+- admin
+- expert
+- service role
 
-```
-001_events.sql              ✅ Events and registrations
-002_quiz.sql                ✅ Development quiz
-010_core.sql                ✅ Core tables (profiles, children, locations)
-011_groups.sql              ✅ Groups and group membership
-012_curriculum.sql          ✅ Curriculum and lessons
-013_workshops_sessions.sql  ✅ Workshops and sessions
-014_content_activities.sql  ✅ Content and home activities
-015_communication.sql       ✅ Messages and notifications
-016_billing_features.sql    ✅ Billing, subscriptions, feature flags
-017_crm_referrals.sql       ✅ CRM, leads, referrals
-018_seed.sql                ✅ Seed data
-019_advanced_tables.sql     ✅ Advanced tracking tables
-020_developmental_milestones.sql ✅ Developmental milestones (200+ entries)
-021_education.sql           ✅ Education content (courses, lessons)
-```
+## Canonical Tables To Verify
 
-### ⚠️ Issues Fixed
+### Identity and core relationships
 
-- **FIXED:** Duplicate `020_` prefix — renamed `020_education.sql` → `021_education.sql`
-- **NO CONFLICTS:** All migration numbers are now unique
+- `profiles`
+- `children`
+- `parent_children`
+- `groups`
+- `group_staff`
+- `child_groups`
 
----
+### Operations and child data
 
-## RLS Coverage Analysis
+- `sessions`
+- `attendance`
+- `observations`
+- `observation_media`
+- `assessments`
+- `quarterly_reports`
+- `child_milestones`
+- `child_lesson_records`
+- `daily_logs`
+- `daily_log_meals`
+- `daily_log_naps`
+- `check_ins`
+- `incident_reports`
+- `learning_stories`
+- `learning_story_media`
+- `authorized_pickups`
+- `emergency_contacts`
 
-### ✅ Tables with Complete RLS
+### Parent-facing content and actions
 
-The following tables have RLS enabled with appropriate policies for all roles:
+- `home_activities`
+- `messages`
+- `notifications`
+- `challenge_submissions`
+- `workshop_feedback`
+- `parent_observations`
 
-#### Core Tables
-- `profiles` — Users can read own, staff/admin read all
-- `children` — Parents read own children, staff read group members
-- `parent_children` — Parents manage own links
-- `locations` — Public read, admin manage
+### Commercial and education
 
-#### Group Tables
-- `groups` — Public read active, staff manage
-- `group_staff` — Staff see own assignments
-- `child_groups` — Parents see own children's groups
+- `subscriptions`
+- `payments`
+- `feature_flags`
+- `educational_content`
+- `course_modules`
+- `course_lessons`
+- `course_enrollments`
+- `lesson_progress`
+- `content_registrations`
+- `resource_materials`
 
-#### Workshop Tables
-- `workshop_templates` — Staff create, parents read
-- `workshops` — Public read published, staff manage
-- `sessions` — Public read published, staff manage
-- `session_enrollments` — Parents enroll own children
+## Expected Access Model
 
-#### Tracking Tables
-- `observations` — Staff create, parents read own children's
-- `assessments` — Staff create, parents read own children's
-- `child_lesson_records` — Staff write, parents read
-- `home_activities` — Staff assign, parents complete
-- `attendance` — Staff mark, parents read own children's
+### Parent
 
-#### Content Tables
-- `blog_posts` — Public read published, admin manage
-- `resources` — Public read, admin manage
+- can read own profile
+- can read and update own linked children where policy allows
+- can read only own child-linked observations, assessments, reports, milestones, daily logs, stories
+- can create allowed parent-originated records such as:
+  - home activities
+  - workshop feedback
+  - parent observations
+  - challenge submissions
+- cannot read other families' children or records
 
-#### Communication Tables
-- `messages` — Sender and recipient can read
-- `notifications` — User sees own notifications
-- `email_campaigns` — Admin only
+### Staff
 
-#### Billing Tables
-- `subscription_plans` — Public read active plans
-- `subscriptions` — Users see own, admin manages
-- `payments` — Users see own, admin manages
-- `feature_flags` — Public read, admin manages
-- `feature_interests` — Users insert own, admin reads all
+- can access only children in assigned groups unless table is explicitly broader
+- can create and update operational records needed for sessions, attendance, observations, and milestone entry
+- cannot see unrelated family-private data outside policy intent
 
-#### Events Tables
-- `events` — Public read published, admin manages
-- `event_registrations` — Anyone can insert (public registration), users read own
+### Admin
 
-#### CRM Tables
-- `leads` — Anyone can insert, admin reads
-- `referrals` — Users manage own referrals
-- `pioneer_wall` — Public read, admin manages
+- full CRUD where the product requires it
 
-#### Milestones Tables
-- `developmental_milestones` — Public read active milestones
-- `child_milestones` — Parents read own children's, staff write
+### Expert
 
----
+- verify intended read-only scope on observations and assessments
+- verify no unintended write access
 
-## Security Verification
+### Service role
 
-### ✅ Critical Security Checks
+- confirm expected bypass for server-side trusted workflows
 
-1. **Authentication Required**
-   - All user data access requires `auth.uid()` check
-   - Public tables explicitly allow anonymous read where intended
+## Verification Method
 
-2. **Parent Isolation**
-   - Parents can ONLY access their own children via `parent_children` table
-   - No direct access to other families' data
+Run each test against a clean local stack after migrations are applied.
 
-3. **Staff Scoping**
-   - Staff access scoped to `role = 'staff'` or `role = 'admin'`
-   - Staff cannot access admin-only functions
+1. Create test actors:
+   - one parent with child A
+   - second parent with child B
+   - one staff user assigned only to group containing child A
+   - one admin
+   - one expert
+2. Seed minimal records for both children across all critical tables.
+3. Authenticate as each actor and execute:
+   - `SELECT`
+   - allowed `INSERT`
+   - allowed `UPDATE`
+   - forbidden `SELECT`
+   - forbidden `INSERT`
+   - forbidden `UPDATE`
+   - forbidden `DELETE`
+4. Record each result as:
+   - pass
+   - fail
+   - not applicable
 
-4. **Admin Privileges**
-   - Admin role has full access via `role = 'admin'` check
-   - No privilege escalation paths found
+## Required Output Table
 
-5. **Public Registration**
-   - Event registration and lead capture work without auth
-   - Registration creates account with proper tier assignment
+For every table, record:
 
----
+- table name
+- role tested
+- action
+- expected result
+- actual result
+- pass/fail
+- notes
 
-## Missing or Weak RLS
+## Launch Gate
 
-### ⚠️ Minor Gaps (Non-Critical)
+Do not mark RLS complete until:
 
-1. **Portfolio Attachments**
-   - Table: `portfolio_attachments`
-   - Status: RLS defined in schema but not verified in migration 019
-   - Risk: Low (linked to portfolio which has RLS)
-
-2. **Email Campaigns Recipients**
-   - Table: `email_campaign_recipients`
-   - Status: Implicit admin-only via campaign RLS
-   - Risk: Low (cascades from campaign policies)
-
-3. **Session Materials**
-   - Table: `session_materials`
-   - Status: Should cascade from session policies
-   - Risk: Low (read-only for parents)
-
-### ✅ Recommendation
-
-All critical tables have appropriate RLS. Minor gaps above are acceptable for soft launch.
-
----
-
-## Migration Baseline Verification
-
-### Test Coverage
-
-To verify RLS is working correctly, run these queries as different users:
-
-```sql
--- As parent: should see only own children
-SELECT * FROM children;
-
--- As staff: should see children in assigned groups
-SELECT * FROM children;
-
--- As admin: should see all children
-SELECT * FROM children;
-
--- Anonymous: should see published events
-SELECT * FROM events WHERE is_published = true;
-
--- Anonymous: should NOT see any children
-SELECT * FROM children; -- should return empty
-```
-
-### Expected Behavior
-
-- ✅ Parents: isolated to own family data
-- ✅ Staff: scoped to assigned groups
-- ✅ Admin: full platform access
-- ✅ Anonymous: public content only (landing, blog, events, resources)
-
----
-
-## Conclusion
-
-**Status: ✅ PRODUCTION READY**
-
-The database migration baseline is **safe enough to build on**. All critical tables have RLS policies that:
-
-1. Prevent data leakage between families
-2. Scope staff access appropriately
-3. Protect admin-only functionality
-4. Allow public registration flows
-
-### Next Steps
-
-1. ✅ **DONE:** Migration sequence verified and fixed (020 duplicate resolved)
-2. ✅ **DONE:** RLS coverage documented
-3. 🔄 **NEXT:** Implement first production API service (email/reports)
-4. 🔄 **NEXT:** Create deployment runbook
-
----
-
-**Verified by:** Claude Sonnet 4.5
-**Date:** 2026-03-09
-**Migration Baseline:** 001–021 (21 files)
-**RLS Policies:** 316+ CREATE TABLE/ALTER TABLE/CREATE POLICY statements
+- all canonical tables above have an explicit result
+- all failures are fixed or intentionally waived in writing
+- service-role behavior is verified separately from normal user roles

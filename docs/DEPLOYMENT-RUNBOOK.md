@@ -41,10 +41,12 @@ Before deploying to production, verify ALL items:
 
 ### Environment Configuration
 - [ ] `.env` files are configured for production
+- [ ] `.env.production` exists and is loaded by root production scripts
 - [ ] All API keys are valid and active
 - [ ] CORS origins include production domain
 - [ ] Email from address is verified with Resend
 - [ ] Supabase service role key is secure and not exposed
+- [ ] `INTERNAL_API_KEY` is set for protected FastAPI email endpoints
 
 ### Infrastructure Readiness
 - [ ] DigitalOcean droplets/apps are provisioned
@@ -63,7 +65,23 @@ Before deploying to production, verify ALL items:
 
 ## Deployment Procedures
 
-### 1. Frontend Deployment (Nuxt 3)
+### 1. Compose-Based Deployment (Current Canonical Path)
+
+```bash
+# 1. Prepare production environment file
+cp .env.production.example .env.production
+
+# 2. Build images
+npm run build:prod
+
+# 3. Start stack
+npm run publish:prod
+
+# 4. Follow logs
+npm run logs:prod
+```
+
+### 2. Frontend Deployment (Nuxt 3)
 
 #### Option A: Manual Deploy to DigitalOcean
 
@@ -117,7 +135,7 @@ curl https://sarenasfera.com/pricing
 
 ---
 
-### 2. API Deployment (FastAPI)
+### 3. API Deployment (FastAPI)
 
 #### Build and Deploy Docker Container
 
@@ -162,6 +180,7 @@ curl https://api.sarenasfera.com/health
 # Test email endpoint (send test email)
 curl -X POST https://api.sarenasfera.com/email/registration \
   -H "Content-Type: application/json" \
+  -H "X-Internal-API-Key: $INTERNAL_API_KEY" \
   -d '{
     "to": "test@sarenasfera.com",
     "parent_name": "Test User",
@@ -172,7 +191,7 @@ curl -X POST https://api.sarenasfera.com/email/registration \
 
 ---
 
-### 3. Database Migration
+### 4. Database Migration
 
 **⚠️ CRITICAL: Always backup before running migrations in production.**
 

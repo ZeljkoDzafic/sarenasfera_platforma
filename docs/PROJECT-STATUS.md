@@ -6,7 +6,7 @@ This document describes the current repository state, not the ideal target state
 
 ## Executive Summary
 
-The project has a strong product direction, a credible Supabase-first architecture, and a meaningful amount of frontend and schema work already present. It is not yet production-ready. The main gaps are authentication flows, backend service depth, deployment hardening, verified database policies, and alignment between documentation and code.
+The project has a strong product direction, a credible Supabase-first architecture, and a meaningful amount of frontend and schema work already present. It is still not yet production-ready. This pass improved deploy packaging, local bootstrap, education seed data, email API protection, and portal HTML sanitization, but launch is still blocked by unverified RLS, unverified auth flows, missing real production infra inputs, and incomplete automated verification.
 
 ## Current Stack
 
@@ -55,13 +55,15 @@ The project has a strong product direction, a credible Supabase-first architectu
 
 ### FastAPI
 
-- Service exists only as a minimal skeleton with `/health`
-- Planned PDF, email, analytics, cron, and service integration are not yet implemented
+- Service now includes health checks, transactional email endpoints, internal API protection, structured error handling, and environment validation
+- Broader PDF/reporting and deeper business workflows are still incomplete
 
 ### Production deployment
 
-- Deployment workflow exists only as a build plus placeholder
-- Production infrastructure is described, but not fully codified
+- Root `package.json` now includes local install/dev and production build/publish entry points
+- Production Dockerfiles now exist for frontend and API
+- Production Kong declarative config now exists and matches production service names
+- Real host rollout is still unverified because certificates, real secrets, and target infra remain external to the repo
 
 ### Frontend data fidelity
 
@@ -81,8 +83,8 @@ The project has a strong product direction, a credible Supabase-first architectu
 - Test coverage beyond type/build checks
 - Observability and alerting
 - Backup/restore runbook
-- Security review and secrets rotation procedure
-- Rate limiting and abuse controls at application level
+- Secrets rotation procedure
+- Full rate limiting and abuse controls across all public write paths
 - Error budgets and incident response process
 
 ## Highest-Leverage Next Steps

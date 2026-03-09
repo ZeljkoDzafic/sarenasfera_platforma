@@ -3,8 +3,11 @@ API Configuration
 Loads environment variables and provides centralized config access.
 """
 
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Optional
+
+from pydantic import model_validator
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -40,6 +43,19 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = "INFO"
+
+    # Internal API protection
+    internal_api_key: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_production_settings(self):
+        """Fail fast on unsafe production configuration."""
+        if self.environment == "production":
+            if not self.internal_api_key:
+                raise ValueError("INTERNAL_API_KEY must be set in production")
+            if any(origin.startswith("http://localhost") for origin in self.cors_origins):
+                raise ValueError("localhost CORS origins must not be enabled in production")
+        return self
 
     class Config:
         env_file = ".env"

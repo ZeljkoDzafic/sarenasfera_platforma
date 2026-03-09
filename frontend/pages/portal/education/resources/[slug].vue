@@ -1,224 +1,400 @@
 <template>
   <div class="space-y-6">
-    <NuxtLink to="/portal/education/resources" class="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700">
-      ← Nazad na biblioteku
-    </NuxtLink>
-
+    <!-- Loading -->
     <div v-if="pending" class="space-y-4">
-      <div class="card h-32 animate-pulse" />
-      <div class="card h-80 animate-pulse" />
+      <div class="card animate-pulse h-64" />
+      <div class="card animate-pulse h-48" />
     </div>
 
-    <div v-else-if="!resource" class="card py-14 text-center">
-      <div class="mb-4 text-5xl">📄</div>
-      <h1 class="font-display text-xl font-bold text-gray-900">Resurs nije pronađen</h1>
-      <p class="mt-2 text-sm text-gray-500">Provjerite link ili se vratite na biblioteku resursa.</p>
+    <!-- Not found -->
+    <div v-else-if="!resource" class="card text-center py-16">
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="font-display font-bold text-xl text-gray-900 mb-2">Resurs nije pronađen</h3>
+      <NuxtLink to="/portal/education/resources" class="btn-primary">Nazad na biblioteku</NuxtLink>
     </div>
 
-    <template v-else>
-      <section class="card">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div class="flex flex-wrap gap-2">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :style="{ backgroundColor: `${resource.domainColor}20`, color: resource.domainColor }">
-                {{ resource.domainLabel }}
-              </span>
-              <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
-                {{ resource.typeLabel }}
-              </span>
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="resource.tierClass">
-                {{ resource.tierLabel }}
-              </span>
+    <div v-else class="space-y-6">
+      <!-- Header -->
+      <div class="card">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-4 flex-1">
+            <!-- Type icon -->
+            <div
+              class="w-20 h-20 rounded-xl flex items-center justify-center text-4xl flex-shrink-0"
+              :class="getTypeBgClass(resource.resource_type)"
+            >
+              {{ getTypeIcon(resource.resource_type) }}
             </div>
 
-            <h1 class="mt-4 text-3xl font-bold text-gray-900">{{ resource.title }}</h1>
-            <p class="mt-3 max-w-3xl text-sm leading-6 text-gray-600">{{ resource.description }}</p>
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-2">
+                <TierBadge :tier="resource.required_tier" />
+                <span
+                  v-if="resource.domain"
+                  class="px-3 py-1 rounded-full text-xs font-semibold"
+                  :style="{ backgroundColor: getDomainColor(resource.domain) + '20', color: getDomainColor(resource.domain) }"
+                >
+                  {{ getDomainName(resource.domain) }}
+                </span>
+              </div>
+
+              <h1 class="font-display text-2xl font-bold text-gray-900 mb-2">{{ resource.title }}</h1>
+              <p class="text-gray-600">{{ resource.description }}</p>
+
+              <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mt-3">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  {{ resource.view_count || 0 }} pregleda
+                </span>
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  {{ resource.download_count || 0 }} preuzimanja
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div class="rounded-3xl px-5 py-4 text-center" :style="{ backgroundColor: `${resource.domainColor}15` }">
-            <div class="text-4xl">{{ resource.icon }}</div>
-            <p class="mt-2 text-sm font-semibold text-gray-900">Uzrast {{ resource.ageLabel }}</p>
-            <p class="text-xs text-gray-500">{{ resource.materials.length }} materijala</p>
+          <!-- Download button -->
+          <div class="text-right">
+            <button
+              v-if="canDownload"
+              class="btn-primary"
+              @click="download"
+              :disabled="downloading"
+            >
+              {{ downloading ? 'Preuzimam...' : `Preuzmi ${getDownloadLabel(resource.resource_type)}` }}
+            </button>
+            <button
+              v-else
+              class="btn-secondary"
+              disabled
+            >
+              🔒 Potrebna nadogradnja
+            </button>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <div class="card">
-          <h2 class="text-lg font-bold text-gray-900">Sadržaj i preporuka</h2>
-          <div class="prose prose-sm mt-4 max-w-none text-gray-700">
-            <div v-if="resource.articleHtml" v-html="resource.articleHtml" />
-            <template v-else>
-              <p>{{ resource.description }}</p>
-              <p>Ovaj resurs je namijenjen roditeljima koji žele praktične smjernice za rad kod kuće i bolje razumijevanje razvoja po domenama.</p>
-              <p>Preporuka: pregledajte materijal prije aktivnosti s djetetom i fokusirajte se na jednu malu rutinu koju možete zadržati svake sedmice.</p>
-            </template>
-          </div>
+      <!-- Content based on type -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Article content -->
+          <article v-if="resource.resource_type === 'article' && resource.content_html" class="card prose max-w-none">
+            <div v-html="sanitizedResourceHtml" />
+          </article>
 
-          <div v-if="resource.videoUrl" class="mt-6">
-            <h3 class="text-base font-bold text-gray-900">Video lekcija</h3>
-            <div v-if="resource.embedVideoUrl" class="mt-3 overflow-hidden rounded-3xl bg-gray-950 shadow-lg">
+          <!-- Video player -->
+          <div v-if="resource.resource_type === 'video' && safeVideoUrl" class="card">
+            <div class="aspect-video rounded-xl bg-gray-900 overflow-hidden">
               <iframe
-                :src="resource.embedVideoUrl"
-                title="Video resurs"
-                class="aspect-video w-full"
+                v-if="safeVideoUrl.includes('youtube') || safeVideoUrl.includes('vimeo')"
+                :src="safeVideoUrl"
+                class="w-full h-full"
+                frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
               />
+              <video v-else :src="safeVideoUrl" controls class="w-full h-full" />
             </div>
-            <video v-else-if="resource.videoUrl.endsWith('.mp4') || resource.videoUrl.endsWith('.webm')" class="mt-3 w-full rounded-3xl bg-black" controls>
-              <source :src="resource.videoUrl" />
-            </video>
-            <a v-else :href="resource.videoUrl" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex text-sm font-semibold text-primary-600 hover:text-primary-700">
-              Otvori video →
-            </a>
+          </div>
+
+          <!-- Materials/Attachments -->
+          <div v-if="materials && materials.length > 0" class="card">
+            <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Priloženi Materijali</h2>
+            <div class="space-y-3">
+              <div
+                v-for="material in materials"
+                :key="material.id"
+                class="flex items-center justify-between p-4 rounded-xl bg-gray-50"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="text-2xl">{{ getFileIcon(material.file_type) }}</div>
+                  <div>
+                    <p class="font-semibold text-gray-900">{{ material.title }}</p>
+                    <p class="text-xs text-gray-500">{{ formatFileSize(material.file_size_bytes) }}</p>
+                  </div>
+                </div>
+                <a
+                  v-if="material.is_downloadable"
+                  :href="sanitizeUrl(material.file_url, false)"
+                  download
+                  class="btn-secondary text-sm"
+                >
+                  Preuzmi
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <h2 class="text-lg font-bold text-gray-900">Materijali</h2>
-          <div v-if="resource.materials.length > 0" class="mt-4 space-y-3">
-            <article v-for="material in resource.materials" :key="material.id" class="rounded-2xl bg-gray-50 p-4">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <p class="font-semibold text-gray-900">{{ material.title }}</p>
-                  <p class="mt-1 text-sm text-gray-600">{{ fileTypeLabel(material.fileType) }}</p>
-                  <p class="mt-1 text-xs text-gray-500">Preuzeto {{ material.downloadCount }} puta</p>
+        <!-- Sidebar -->
+        <div class="space-y-4">
+          <!-- Related resources -->
+          <div class="card">
+            <h3 class="font-display font-bold text-sm text-gray-900 mb-3">Slični Resursi</h3>
+            <div class="space-y-3">
+              <NuxtLink
+                v-for="related in relatedResources"
+                :key="related.id"
+                :to="`/portal/education/resources/${related.slug}`"
+                class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                <div class="text-xl">{{ getTypeIcon(related.resource_type) }}</div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-gray-900 text-sm line-clamp-2">{{ related.title }}</p>
+                  <p class="text-xs text-gray-500 mt-1">{{ getDomainName(related.domain) }}</p>
                 </div>
-                <button
-                  v-if="material.fileUrl"
-                  type="button"
-                  class="btn-secondary text-sm"
-                  @click="openMaterial(material)"
-                >
-                  Otvori
-                </button>
-              </div>
-            </article>
+              </NuxtLink>
+            </div>
           </div>
-          <p v-else class="mt-4 text-sm text-gray-500">Ovaj resurs još nema priložene materijale.</p>
+
+          <!-- Info box -->
+          <div class="card bg-primary-50 border-primary-200">
+            <h3 class="font-bold text-gray-900 mb-2">ℹ️ O ovom resursu</h3>
+            <ul class="space-y-2 text-sm text-gray-700">
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                Tip: {{ getTypeLabel(resource.resource_type) }}
+              </li>
+              <li v-if="resource.domain" class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                Domena: {{ getDomainName(resource.domain) }}
+              </li>
+              <li v-if="resource.age_min && resource.age_max" class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                Uzrast: {{ resource.age_min }}-{{ resource.age_max }} godina
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                Objavljeno: {{ formatDate(resource.created_at) }}
+              </li>
+            </ul>
+          </div>
         </div>
-      </section>
-    </template>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth', layout: 'portal' })
+import { sanitizeHtml, sanitizeUrl } from '~/utils/sanitizeHtml'
+
+definePageMeta({ middleware: ['auth', 'role'], layout: 'portal' })
 
 const route = useRoute()
 const supabase = useSupabase()
-const slug = route.params.slug as string
+const { user } = useAuth()
+const { tierName } = useTier()
 
-const domains = {
-  emotional: { label: 'Emocionalni', color: '#cf2e2e', icon: '❤️' },
-  social: { label: 'Socijalni', color: '#fcb900', icon: '🤝' },
-  creative: { label: 'Kreativni', color: '#9b51e0', icon: '🎨' },
-  cognitive: { label: 'Kognitivni', color: '#0693e3', icon: '🧠' },
-  motor: { label: 'Motorički', color: '#00d084', icon: '🏃' },
-  language: { label: 'Jezički', color: '#f78da7', icon: '💬' },
-} as const
+const resourceSlug = route.params.slug as string
+const downloading = ref(false)
+const sanitizedResourceHtml = computed(() => sanitizeHtml(resource.value?.content_html))
+const safeVideoUrl = computed(() => sanitizeUrl(resource.value?.metadata?.video_url ?? '', false))
 
-const { data: resource, pending } = await useAsyncData(`portal-resource-${slug}`, async () => {
+const { data: resource, pending } = await useAsyncData(`resource-${resourceSlug}`, async () => {
   const { data } = await supabase
     .from('educational_content')
     .select(`
-      id,
-      title,
-      slug,
-      description,
-      domain,
-      age_min,
-      age_max,
-      required_tier,
-      resource_materials (
-        id,
-        title,
-        file_url,
-        file_type,
-        download_count,
-        content_html,
-        video_url
+      *,
+      resource_materials(
+        id, file_url, file_type, file_size_bytes, title, description, is_downloadable
       )
     `)
-    .eq('slug', slug)
+    .eq('slug', resourceSlug)
     .eq('content_type', 'resource')
-    .eq('status', 'published')
-    .maybeSingle()
+    .single()
 
-  if (!data) return null
-
-  const domain = domains[(data.domain as keyof typeof domains) ?? 'creative'] ?? domains.creative
-  const materials = (data.resource_materials ?? []).map((item: Record<string, any>) => ({
-    id: item.id as string,
-    title: item.title as string,
-    fileUrl: item.file_url as string,
-    fileType: item.file_type as string,
-    downloadCount: Number(item.download_count ?? 0),
-    contentHtml: item.content_html as string | null,
-    videoUrl: item.video_url as string | null,
-  }))
-
-  const articleMaterial = materials.find((item) => item.fileType === 'article' && item.contentHtml)
-  const videoMaterial = materials.find((item) => item.videoUrl || item.fileType === 'video')
-  const videoUrl = videoMaterial?.videoUrl || videoMaterial?.fileUrl || null
-
-  return {
-    id: data.id as string,
-    title: data.title as string,
-    slug: data.slug as string,
-    description: (data.description as string | null) ?? 'Edukativni materijal za roditelje i dijete.',
-    domainLabel: domain.label,
-    domainColor: domain.color,
-    icon: domain.icon,
-    ageLabel: `${data.age_min ?? 2}-${data.age_max ?? 6}`,
-    tierLabel: data.required_tier === 'premium' ? 'Premium' : data.required_tier === 'paid' ? 'Paid' : 'Free',
-    tierClass: data.required_tier === 'premium' ? 'bg-primary-100 text-primary-700' : data.required_tier === 'paid' ? 'bg-brand-green/15 text-brand-green' : 'bg-gray-100 text-gray-600',
-    typeLabel: materials.some((item) => item.fileType === 'video' || item.videoUrl) ? 'Video resurs' : materials.some((item) => item.fileType === 'pdf') ? 'PDF resurs' : 'Članak / vodič',
-    articleHtml: articleMaterial?.contentHtml ?? null,
-    videoUrl,
-    embedVideoUrl: toEmbedUrl(videoUrl),
-    materials,
+  // Increment view count
+  if (data) {
+    await supabase
+      .from('educational_content')
+      .update({ view_count: data.view_count + 1 })
+      .eq('id', data.id)
   }
+
+  return data
 })
 
-async function trackDownload(materialId: string) {
-  if (!resource.value) return
-  const material = resource.value.materials.find((item) => item.id === materialId)
-  if (!material) return
+const { data: materials } = await useAsyncData(`resource-materials-${resourceSlug}`, async () => {
+  if (!resource.value) return []
 
-  await supabase
+  const { data } = await supabase
     .from('resource_materials')
-    .update({ download_count: material.downloadCount + 1 })
-    .eq('id', materialId)
+    .select('*')
+    .eq('content_id', resource.value.id)
+    .order('created_at')
 
-  material.downloadCount += 1
+  return data ?? []
+})
+
+const { data: relatedResources } = await useAsyncData(`related-resources-${resourceSlug}`, async () => {
+  if (!resource.value) return []
+
+  const { data } = await supabase
+    .from('educational_content')
+    .select('*')
+    .eq('content_type', 'resource')
+    .eq('status', 'published')
+    .neq('id', resource.value.id)
+    .eq('domain', resource.value.domain)
+    .limit(4)
+
+  return (data ?? []).map(r => ({
+    ...r,
+    resource_type: r.resource_materials?.[0]?.file_type || 'article',
+  }))
+})
+
+// Check download limits
+const downloadLimits: Record<string, number> = {
+  free: 5,
+  paid: 20,
+  premium: 9999,
 }
 
-async function openMaterial(material: { id: string; fileUrl: string }) {
-  await trackDownload(material.id)
-  window.open(material.fileUrl, '_blank', 'noopener,noreferrer')
+const { data: downloadCount } = await useAsyncData('monthly-downloads', async () => {
+  if (!user.value) return 0
+
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
+  const { count } = await supabase
+    .from('content_registrations')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.value.id)
+    .gte('created_at', startOfMonth.toISOString())
+
+  return count || 0
+})
+
+const canDownload = computed(() => {
+  if (!resource.value) return false
+  if (resource.value.required_tier === 'free') return true
+
+  const limit = downloadLimits[tierName.value] || 5
+  return (downloadCount.value || 0) < limit
+})
+
+async function download() {
+  if (!resource.value || !canDownload.value) return
+
+  downloading.value = true
+
+  try {
+    // Track download
+    await supabase.from('content_registrations').insert({
+      user_id: user.value!.id,
+      content_id: resource.value.id,
+      status: 'attended',
+    })
+
+    // Trigger actual download from first material
+    const material = materials.value?.[0]
+    if (material?.file_url) {
+      const a = document.createElement('a')
+      a.href = material.file_url
+      a.download = ''
+      a.target = '_blank'
+      a.click()
+    }
+
+    await refreshNuxtData('monthly-downloads')
+  } catch (err) {
+    console.error('Download failed:', err)
+  } finally {
+    downloading.value = false
+  }
 }
 
-function toEmbedUrl(url: string | null) {
-  if (!url) return null
-  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  if (youtubeMatch) return `https://www.youtube.com/embed/${youtubeMatch[1]}`
-  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
-  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`
-  return null
+function getTypeIcon(type: string): string {
+  const map: Record<string, string> = {
+    article: '📄',
+    pdf: '📕',
+    video: '🎬',
+    worksheet: '📝',
+  }
+  return map[type] || '📄'
 }
 
-function fileTypeLabel(type: string) {
-  const labels: Record<string, string> = {
+function getTypeBgClass(type: string): string {
+  const map: Record<string, string> = {
+    article: 'bg-gray-100',
+    pdf: 'bg-brand-red/10',
+    video: 'bg-brand-pink/10',
+    worksheet: 'bg-primary-100',
+  }
+  return map[type] || 'bg-gray-100'
+}
+
+function getTypeLabel(type: string): string {
+  const map: Record<string, string> = {
     article: 'Članak',
-    pdf: 'PDF materijal',
-    image: 'Galerija / slika',
-    video: 'Video lekcija',
-    audio: 'Audio zapis',
-    document: 'Dokument',
+    pdf: 'PDF Dokument',
+    video: 'Video',
     worksheet: 'Radni list',
   }
-  return labels[type] ?? 'Materijal'
+  return map[type] || 'Resurs'
+}
+
+function getDownloadLabel(type: string): string {
+  if (type === 'pdf') return 'PDF'
+  if (type === 'video') return 'Video'
+  if (type === 'worksheet') return 'Radni list'
+  return 'Resurs'
+}
+
+function getFileIcon(type: string): string {
+  const map: Record<string, string> = {
+    pdf: '📕',
+    image: '🖼️',
+    video: '🎬',
+    audio: '🎵',
+    document: '📄',
+    worksheet: '📝',
+  }
+  return map[type] || '📄'
+}
+
+function getDomainColor(domain: string): string {
+  const colors: Record<string, string> = {
+    emotional: '#cf2e2e',
+    social: '#fcb900',
+    creative: '#9b51e0',
+    cognitive: '#0693e3',
+    motor: '#00d084',
+    language: '#f78da7',
+  }
+  return colors[domain] || '#9b51e0'
+}
+
+function getDomainName(domain: string): string {
+  const names: Record<string, string> = {
+    emotional: 'Emocionalni',
+    social: 'Socijalni',
+    creative: 'Kreativni',
+    cognitive: 'Kognitivni',
+    motor: 'Motorički',
+    language: 'Jezički',
+  }
+  return names[domain] || domain
+}
+
+function formatFileSize(bytes: number): string {
+  if (!bytes) return ''
+  const kb = bytes / 1024
+  if (kb < 1024) return `${Math.round(kb)} KB`
+  return `${(kb / 1024).toFixed(1)} MB`
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('bs-BA', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>

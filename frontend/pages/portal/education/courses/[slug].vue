@@ -1,272 +1,369 @@
 <template>
   <div class="space-y-6">
-    <NuxtLink to="/portal/education/courses" class="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700">
-      ← Nazad na kurseve
-    </NuxtLink>
-
+    <!-- Loading -->
     <div v-if="pending" class="space-y-4">
-      <div class="card h-40 animate-pulse" />
-      <div class="card h-80 animate-pulse" />
+      <div class="card animate-pulse h-64" />
+      <div class="card animate-pulse h-48" />
     </div>
 
-    <div v-else-if="!course" class="card py-14 text-center">
-      <div class="mb-4 text-5xl">🎓</div>
-      <h1 class="font-display text-xl font-bold text-gray-900">Kurs nije pronađen</h1>
+    <!-- Not found -->
+    <div v-else-if="!course" class="card text-center py-16">
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="font-display font-bold text-xl text-gray-900 mb-2">Kurs nije pronađen</h3>
+      <NuxtLink to="/portal/education/courses" class="btn-primary">Nazad na kurseve</NuxtLink>
     </div>
 
-    <template v-else>
-      <section class="card">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div class="flex flex-wrap gap-2">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :style="{ backgroundColor: `${course.domainColor}20`, color: course.domainColor }">
-                {{ course.domainLabel }}
-              </span>
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="course.tierClass">
-                {{ course.tierLabel }}
-              </span>
-              <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
-                {{ course.lessonCount }} lekcija
-              </span>
-            </div>
-
-            <h1 class="mt-4 text-3xl font-bold text-gray-900">{{ course.title }}</h1>
-            <p class="mt-3 max-w-3xl text-sm leading-6 text-gray-600">{{ course.description }}</p>
-          </div>
-
-          <div class="rounded-3xl px-5 py-4 text-center" :style="{ backgroundColor: `${course.domainColor}15` }">
-            <div class="text-4xl">{{ course.domainIcon }}</div>
-            <p class="mt-2 text-sm font-semibold text-gray-900">{{ course.durationLabel }}</p>
-            <p class="text-xs text-gray-500">{{ course.progressLabel }}</p>
-          </div>
+    <div v-else class="space-y-6">
+      <!-- Header with cover -->
+      <div class="card overflow-hidden p-0">
+        <div
+          v-if="course.cover_image_url"
+          class="h-64 bg-cover bg-center"
+          :style="{ backgroundImage: `url(${course.cover_image_url})` }"
+        />
+        <div v-else class="h-64 bg-gradient-to-br from-primary-500 to-brand-pink flex items-center justify-center">
+          <span class="text-6xl">📚</span>
         </div>
-      </section>
 
-      <section class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <div class="card">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-lg font-bold text-gray-900">Moduli i lekcije</h2>
-              <p class="mt-1 text-sm text-gray-500">Prva preview lekcija je dostupna i bez upisa. Ostatak prati vaš plan pristupa.</p>
-            </div>
-            <span class="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
-              {{ course.progressLabel }}
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <TierBadge :tier="course.required_tier" />
+            <span
+              v-if="course.domain"
+              class="px-3 py-1 rounded-full text-xs font-semibold"
+              :style="{ backgroundColor: getDomainColor(course.domain) + '20', color: getDomainColor(course.domain) }"
+            >
+              {{ getDomainName(course.domain) }}
             </span>
           </div>
 
-          <div class="mt-5 space-y-4">
-            <article v-for="module in course.modules" :key="module.id" class="rounded-2xl border border-gray-100 p-4">
-              <div class="flex items-center justify-between gap-3">
-                <div>
-                  <h3 class="font-semibold text-gray-900">{{ module.title }}</h3>
-                  <p v-if="module.description" class="mt-1 text-sm text-gray-500">{{ module.description }}</p>
-                </div>
-                <span class="text-xs font-semibold text-gray-400">{{ module.lessons.length }} lekcija</span>
-              </div>
+          <h1 class="font-display text-2xl font-bold text-gray-900 mb-2">{{ course.title }}</h1>
+          <p class="text-gray-600 mb-4">{{ course.description }}</p>
 
-              <div class="mt-4 space-y-2">
-                <div
-                  v-for="lesson in module.lessons"
-                  :key="lesson.id"
-                  class="flex items-center justify-between gap-3 rounded-2xl bg-gray-50 px-4 py-3"
-                >
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold text-gray-900">{{ lesson.title }}</p>
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ lesson.isPreview ? 'Preview' : lesson.accessLabel }}
-                    </p>
-                  </div>
-                  <NuxtLink
-                    v-if="lesson.canOpen"
-                    :to="`/portal/education/courses/${course.slug}/lessons/${lesson.id}`"
-                    class="btn-secondary text-sm"
-                  >
-                    Otvori
-                  </NuxtLink>
-                  <span v-else class="rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-500">Zaključano</span>
-                </div>
-              </div>
-            </article>
+          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ course.duration_minutes || 0 }} min
+            </span>
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {{ modules.length }} modula
+            </span>
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {{ course.view_count || 0 }} pregleda
+            </span>
+          </div>
+
+          <!-- Enroll / Continue button -->
+          <div class="flex gap-3">
+            <button
+              v-if="isEnrolled"
+              class="btn-primary"
+              @click="continueLearning"
+            >
+              {{ progress > 0 ? 'Nastavi učenje' : 'Započni kurs' }}
+            </button>
+            <button
+              v-else
+              class="btn-primary"
+              @click="enroll"
+              :disabled="enrolling"
+            >
+              {{ enrolling ? 'Upisujem...' : 'Upiši se besplatno' }}
+            </button>
+            <button class="btn-secondary">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              Sačuvaj
+            </button>
           </div>
         </div>
+      </div>
 
-        <div class="space-y-4">
-          <div class="card">
-            <h2 class="text-lg font-bold text-gray-900">Akcije</h2>
-            <div class="mt-4 space-y-3">
-              <button
-                v-if="canEnroll"
-                type="button"
-                class="btn-primary w-full"
-                :disabled="enrolling"
-                @click="enroll"
-              >
-                {{ enrolling ? 'Upisujem...' : 'Upiši kurs' }}
-              </button>
-              <NuxtLink
-                v-else-if="primaryLessonHref"
-                :to="primaryLessonHref"
-                class="btn-primary block w-full text-center"
-              >
-                {{ course.enrollment ? 'Nastavi kurs' : 'Pogledaj preview' }}
-              </NuxtLink>
-              <NuxtLink to="/pricing" class="btn-secondary block w-full text-center">
-                Pregled planova
-              </NuxtLink>
+      <!-- Progress (if enrolled) -->
+      <div v-if="isEnrolled && progress > 0" class="card">
+        <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Tvoj Napredak</h2>
+        <div class="flex items-center gap-4">
+          <div class="flex-1">
+            <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-primary-500 rounded-full transition-all"
+                :style="{ width: `${progress}%` }"
+              />
             </div>
           </div>
+          <span class="text-lg font-bold text-primary-600">{{ progress }}%</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">
+          {{ completedLessons }} od {{ totalLessons }} lekcija završeno
+        </p>
+      </div>
 
-          <div class="card">
-            <h2 class="text-lg font-bold text-gray-900">Sažetak</h2>
-            <dl class="mt-4 space-y-3 text-sm">
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-gray-500">Trajanje</dt>
-                <dd class="font-semibold text-gray-900">{{ course.durationLabel }}</dd>
+      <!-- Syllabus / Modules -->
+      <section>
+        <h2 class="font-display font-bold text-lg text-gray-900 mb-4">Program Kursa</h2>
+
+        <div class="space-y-4">
+          <div
+            v-for="(module, index) in modules"
+            :key="module.id"
+            class="card"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-sm">
+                {{ index + 1 }}
               </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-gray-500">Tier</dt>
-                <dd class="font-semibold text-gray-900">{{ course.tierLabel }}</dd>
+              <h3 class="font-bold text-gray-900">{{ module.title }}</h3>
+            </div>
+
+            <div class="space-y-2 ml-11">
+              <div
+                v-for="lesson in module.lessons"
+                :key="lesson.id"
+                class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+                @click="openLesson(lesson)"
+              >
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <!-- Lesson type icon -->
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    :class="getLessonTypeClass(lesson.lesson_type)"
+                  >
+                    {{ getLessonTypeIcon(lesson.lesson_type) }}
+                  </div>
+
+                  <!-- Lesson info -->
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 text-sm truncate">{{ lesson.title }}</h4>
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                      <span v-if="lesson.video_duration">{{ formatDuration(lesson.video_duration) }}</span>
+                      <span v-if="lesson.lesson_type !== 'content'">• {{ getLessonTypeLabel(lesson.lesson_type) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Status -->
+                  <div v-if="isEnrolled" class="flex-shrink-0">
+                    <span
+                      v-if="completedLessonsList.includes(lesson.id)"
+                      class="text-brand-green text-sm font-semibold"
+                    >
+                      ✓ Završeno
+                    </span>
+                    <span v-else-if="lesson.is_preview" class="text-primary-600 text-xs font-semibold">
+                      🔓 Preview
+                    </span>
+                    <span v-else class="text-gray-400 text-xs">
+                      🔒 Zaključano
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-gray-500">Napredak</dt>
-                <dd class="font-semibold text-gray-900">{{ course.progressLabel }}</dd>
-              </div>
-            </dl>
+            </div>
           </div>
         </div>
       </section>
-    </template>
+
+      <!-- Instructor / About -->
+      <section class="card">
+        <h2 class="font-display font-bold text-lg text-gray-900 mb-4">O Kursu</h2>
+        <div class="prose max-w-none text-gray-700">
+          <p>{{ course.description }}</p>
+        </div>
+
+        <div class="mt-4 flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
+            {{ (course.created_by || 'A')[0] }}
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900">Šarena Sfera Tim</p>
+            <p class="text-sm text-gray-500">Autor</p>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth', layout: 'portal' })
+definePageMeta({ middleware: ['auth', 'role'], layout: 'portal' })
 
 const route = useRoute()
 const supabase = useSupabase()
 const { user } = useAuth()
-const { hasAccess } = useTier()
-const slug = route.params.slug as string
-const enrolling = ref(false)
 
-const domainMeta = {
-  emotional: { label: 'Emocionalni', color: '#cf2e2e', icon: '❤️' },
-  social: { label: 'Socijalni', color: '#fcb900', icon: '🤝' },
-  creative: { label: 'Kreativni', color: '#9b51e0', icon: '🎨' },
-  cognitive: { label: 'Kognitivni', color: '#0693e3', icon: '🧠' },
-  motor: { label: 'Motorički', color: '#00d084', icon: '🏃' },
-  language: { label: 'Jezički', color: '#f78da7', icon: '💬' },
-} as const
+const courseSlug = route.params.slug as string
 
-const { data: course, pending, refresh } = await useAsyncData(`portal-course-${slug}`, async () => {
-  const { data: courseRow } = await supabase
+const { data: course, pending } = await useAsyncData(`course-${courseSlug}`, async () => {
+  const { data } = await supabase
     .from('educational_content')
+    .select('*')
+    .eq('slug', courseSlug)
+    .eq('content_type', 'course')
+    .single()
+
+  return data
+})
+
+// Load modules and lessons
+const { data: modulesData } = await useAsyncData(`course-modules-${courseSlug}`, async () => {
+  if (!course.value) return []
+
+  const { data } = await supabase
+    .from('course_modules')
     .select(`
-      id,
-      title,
-      slug,
-      description,
-      domain,
-      age_min,
-      age_max,
-      required_tier,
-      duration_minutes,
-      course_modules (
-        id,
-        title,
-        description,
-        sort_order,
-        course_lessons (
-          id,
-          title,
-          description,
-          sort_order,
-          is_preview
-        )
+      *,
+      course_lessons(
+        id, title, slug, lesson_type, video_duration, is_preview, sort_order
       )
     `)
-    .eq('slug', slug)
-    .eq('content_type', 'course')
-    .eq('status', 'published')
-    .maybeSingle()
+    .eq('course_id', course.value.id)
+    .order('sort_order')
 
-  if (!courseRow) return null
-
-  const enrollment = user.value
-    ? (await supabase
-        .from('course_enrollments')
-        .select('id, progress_percent, completed_lessons, status')
-        .eq('user_id', user.value.id)
-        .eq('course_id', courseRow.id)
-        .maybeSingle()).data
-    : null
-
-  const completedLessons = new Set((enrollment?.completed_lessons as string[] | null) ?? [])
-  const domain = domainMeta[(courseRow.domain as keyof typeof domainMeta) ?? 'creative'] ?? domainMeta.creative
-  const tierAllowed = hasAccess(courseRow.required_tier as 'free' | 'paid' | 'premium')
-
-  const modules = (courseRow.course_modules ?? [])
-    .sort((a: Record<string, any>, b: Record<string, any>) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
-    .map((module: Record<string, any>) => ({
-      id: module.id as string,
-      title: module.title as string,
-      description: (module.description as string | null) ?? '',
-      lessons: (module.course_lessons ?? [])
-        .sort((a: Record<string, any>, b: Record<string, any>) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
-        .map((lesson: Record<string, any>) => ({
-          id: lesson.id as string,
-          title: lesson.title as string,
-          isPreview: Boolean(lesson.is_preview),
-          canOpen: Boolean(lesson.is_preview) || Boolean(enrollment) || tierAllowed,
-          accessLabel: completedLessons.has(lesson.id as string) ? 'Završeno' : tierAllowed ? 'Dostupno nakon upisa' : 'Zaključano po planu',
-        })),
-    }))
-
-  const allLessons = modules.flatMap((module) => module.lessons)
-  const previewLesson = allLessons.find((lesson) => lesson.isPreview) ?? allLessons[0] ?? null
-
-  return {
-    id: courseRow.id as string,
-    slug: courseRow.slug as string,
-    title: courseRow.title as string,
-    description: (courseRow.description as string | null) ?? 'Online kurs za roditelje.',
-    domainLabel: domain.label,
-    domainColor: domain.color,
-    domainIcon: domain.icon,
-    durationLabel: `${courseRow.duration_minutes ?? 60} min`,
-    lessonCount: allLessons.length,
-    tierLabel: courseRow.required_tier === 'premium' ? 'Premium' : courseRow.required_tier === 'paid' ? 'Paid' : 'Free',
-    tierClass: courseRow.required_tier === 'premium' ? 'bg-primary-100 text-primary-700' : courseRow.required_tier === 'paid' ? 'bg-brand-green/15 text-brand-green' : 'bg-gray-100 text-gray-600',
-    enrollment,
-    progressLabel: enrollment ? `${Number(enrollment.progress_percent ?? 0).toFixed(0)}%` : 'Nije upisano',
-    modules,
-    previewLesson,
-    tierAllowed,
-  }
+  return (data ?? []).map(m => ({
+    ...m,
+    lessons: (m.course_lessons || []).sort((a, b) => a.sort_order - b.sort_order),
+  }))
 })
 
-const canEnroll = computed(() => {
-  return Boolean(course.value && !course.value.enrollment && course.value.tierAllowed)
+const modules = computed(() => modulesData.value || [])
+
+const totalLessons = computed(() =>
+  modules.value.reduce((sum, m) => sum + m.lessons.length, 0)
+)
+
+// Check enrollment
+const { data: enrollment } = await useAsyncData('course-enrollment', async () => {
+  if (!user.value || !course.value) return null
+
+  const { data } = await supabase
+    .from('course_enrollments')
+    .select('*')
+    .eq('user_id', user.value.id)
+    .eq('course_id', course.value.id)
+    .single()
+
+  return data
 })
 
-const primaryLessonHref = computed(() => {
-  if (!course.value?.previewLesson) return null
-  return `/portal/education/courses/${course.value.slug}/lessons/${course.value.previewLesson.id}`
-})
+const isEnrolled = computed(() => !!enrollment.value)
+const progress = computed(() => enrollment.value?.progress_percent || 0)
+const completedLessons = computed(() => enrollment.value?.completed_lessons?.length || 0)
+const completedLessonsList = computed(() => enrollment.value?.completed_lessons || [])
+
+const enrolling = ref(false)
 
 async function enroll() {
-  if (!course.value || !user.value) return
+  if (!user.value || !course.value) return
+
   enrolling.value = true
+
   try {
+    // Check if user has access based on tier
+    const { data: canAccess } = await supabase.rpc('can_access_content', {
+      content_id: course.value.id,
+    })
+
+    if (!canAccess) {
+      navigateTo('/pricing')
+      return
+    }
+
+    // Create enrollment
     await supabase.from('course_enrollments').insert({
       user_id: user.value.id,
       course_id: course.value.id,
-      progress_percent: 0,
       status: 'active',
     })
-    await refresh()
+
+    // Refresh
+    await refreshNuxtData('course-enrollment')
+  } catch (err) {
+    console.error('Failed to enroll:', err)
   } finally {
     enrolling.value = false
   }
+}
+
+function continueLearning() {
+  // Find first incomplete lesson
+  const allLessons = modules.value.flatMap(m => m.lessons)
+  const nextLesson = allLessons.find(l => !completedLessonsList.value.includes(l.id))
+
+  if (nextLesson) {
+    openLesson(nextLesson)
+  }
+}
+
+function openLesson(lesson: any) {
+  navigateTo(`/portal/education/courses/${courseSlug}/lessons/${lesson.slug}`)
+}
+
+function getDomainColor(domain: string): string {
+  const colors: Record<string, string> = {
+    emotional: '#cf2e2e',
+    social: '#fcb900',
+    creative: '#9b51e0',
+    cognitive: '#0693e3',
+    motor: '#00d084',
+    language: '#f78da7',
+  }
+  return colors[domain] || '#9b51e0'
+}
+
+function getDomainName(domain: string): string {
+  const names: Record<string, string> = {
+    emotional: 'Emocionalni',
+    social: 'Socijalni',
+    creative: 'Kreativni',
+    cognitive: 'Kognitivni',
+    motor: 'Motorički',
+    language: 'Jezički',
+  }
+  return names[domain] || domain
+}
+
+function getLessonTypeClass(type: string): string {
+  const map: Record<string, string> = {
+    content: 'bg-primary-100 text-primary-600',
+    quiz: 'bg-brand-amber/20 text-brand-amber',
+    assignment: 'bg-brand-pink/20 text-brand-pink',
+    discussion: 'bg-brand-green/20 text-brand-green',
+  }
+  return map[type] || 'bg-gray-100 text-gray-600'
+}
+
+function getLessonTypeIcon(type: string): string {
+  const map: Record<string, string> = {
+    content: '📖',
+    quiz: '📝',
+    assignment: '📋',
+    discussion: '💬',
+  }
+  return map[type] || '📄'
+}
+
+function getLessonTypeLabel(type: string): string {
+  const map: Record<string, string> = {
+    content: 'Lekcija',
+    quiz: 'Kviz',
+    assignment: 'Zadatak',
+    discussion: 'Diskusija',
+  }
+  return map[type] || 'Lekcija'
+}
+
+function formatDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 </script>

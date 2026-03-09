@@ -50,9 +50,9 @@
       <section class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <div class="space-y-4">
           <div class="card">
-            <div v-if="lessonView.lesson.videoUrl" class="mb-4 overflow-hidden rounded-2xl bg-black/5">
+            <div v-if="safeVideoUrl" class="mb-4 overflow-hidden rounded-2xl bg-black/5">
               <iframe
-                :src="lessonView.lesson.videoUrl"
+                :src="safeVideoUrl"
                 class="aspect-video w-full"
                 title="Video lekcija"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -60,7 +60,7 @@
               />
             </div>
 
-            <div v-if="lessonView.lesson.contentHtml" class="prose prose-sm max-w-none" v-html="lessonView.lesson.contentHtml" />
+            <div v-if="lessonView.lesson.contentHtml" class="prose prose-sm max-w-none" v-html="sanitizedLessonHtml" />
             <div v-else class="prose prose-sm max-w-none text-gray-700">
               <p>{{ lessonView.lesson.description || 'Lekcija je dostupna kroz video i priložene materijale.' }}</p>
             </div>
@@ -72,7 +72,7 @@
               <a
                 v-for="attachment in lessonView.lesson.attachments"
                 :key="attachment"
-                :href="attachment"
+                :href="sanitizeUrl(attachment, false)"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="btn-secondary block w-full text-center"
@@ -102,6 +102,8 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeHtml, sanitizeUrl } from '~/utils/sanitizeHtml'
+
 definePageMeta({ middleware: 'auth', layout: 'portal' })
 
 const route = useRoute()
@@ -111,6 +113,8 @@ const { hasAccess } = useTier()
 const slug = route.params.slug as string
 const lessonId = route.params.id as string
 const saving = ref(false)
+const sanitizedLessonHtml = computed(() => sanitizeHtml(lessonView.value?.lesson.contentHtml))
+const safeVideoUrl = computed(() => sanitizeUrl(lessonView.value?.lesson.videoUrl ?? '', false))
 
 const domainMeta = {
   emotional: { label: 'Emocionalni', color: '#cf2e2e' },

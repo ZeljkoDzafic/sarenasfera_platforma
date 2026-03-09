@@ -82,7 +82,7 @@ services:
       - "5000:5000"
     environment:
       ANON_KEY: ${ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MDk5NTIwMCwiZXhwIjoxNzk4NzYxNjAwfQ.placeholder}
-      SERVICE_KEY: ${SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjQwOTk1MjAwLCJleHAiOjE3OTg3NjE2MDB9.placeholder}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic2FyZW5hc2ZlcmEtbG9jYWwiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjA5OTk5OTk5OX0.aek88IZjaoZGK1K_KnmW6Kr12FHVi34xK_uJfRo7FLE}
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres
       PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       STORAGE_BACKEND: file
@@ -108,8 +108,8 @@ services:
       DEFAULT_PROJECT_NAME: "Sarena Sfera Dev"
       SUPABASE_URL: http://localhost:54321
       SUPABASE_PUBLIC_URL: http://localhost:54321
-      SUPABASE_ANON_KEY: ${ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder}
-      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder}
+      SUPABASE_ANON_KEY: ${ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InNhcmVuYXNmZXJhLWxvY2FsIiwiaWF0IjoxNzAwMDAwMDAwLCJleHAiOjIwOTk5OTk5OTl9.WpIjNCEGjlnYVuXX1db8MyAZPCb5Pg4m-1BFa1x6VGU}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic2FyZW5hc2ZlcmEtbG9jYWwiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjA5OTk5OTk5OX0.aek88IZjaoZGK1K_KnmW6Kr12FHVi34xK_uJfRo7FLE}
     depends_on:
       - meta
 
@@ -169,7 +169,8 @@ services:
       - "8080:8080"
     environment:
       SUPABASE_URL: http://kong:8000
-      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY:-placeholder}
+      SUPABASE_ANON_KEY: ${ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InNhcmVuYXNmZXJhLWxvY2FsIiwiaWF0IjoxNzAwMDAwMDAwLCJleHAiOjIwOTk5OTk5OTl9.WpIjNCEGjlnYVuXX1db8MyAZPCb5Pg4m-1BFa1x6VGU}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic2FyZW5hc2ZlcmEtbG9jYWwiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjA5OTk5OTk5OX0.aek88IZjaoZGK1K_KnmW6Kr12FHVi34xK_uJfRo7FLE}
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres
     volumes:
       - ./api:/app

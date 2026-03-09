@@ -1,51 +1,45 @@
-#!/bin/bash
-# Sarena Sfera - Local Development Setup
-# Usage: bash scripts/setup-local.sh
+#!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
-echo "=== Sarena Sfera - Local Setup ==="
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# 1. Copy env file if not exists
-if [ ! -f .env ]; then
-  cp .env.example .env
-  echo "[OK] Created .env from .env.example"
-  echo "     Edit .env with your secrets before running Docker!"
-else
-  echo "[OK] .env already exists"
-fi
+copy_if_missing() {
+  local source_file="$1"
+  local target_file="$2"
 
-# 2. Copy frontend env
-if [ ! -f frontend/.env ]; then
-  cp frontend/.env.example frontend/.env
-  echo "[OK] Created frontend/.env"
-else
-  echo "[OK] frontend/.env already exists"
-fi
+  if [ -f "$target_file" ]; then
+    echo "skip  $target_file already exists"
+  else
+    cp "$source_file" "$target_file"
+    echo "create $target_file"
+  fi
+}
 
-# 3. Install frontend dependencies
-echo ""
-echo "=== Installing frontend dependencies ==="
-cd frontend
-npm install
-cd ..
+copy_if_missing "$ROOT_DIR/.env.example" "$ROOT_DIR/.env"
+copy_if_missing "$ROOT_DIR/frontend/.env.example" "$ROOT_DIR/frontend/.env"
+copy_if_missing "$ROOT_DIR/api/.env.example" "$ROOT_DIR/api/.env"
 
-# 4. Start Docker services
-echo ""
-echo "=== Starting Docker services ==="
-docker compose up -d
+cat <<'EOF'
 
-echo ""
-echo "=== Setup Complete ==="
-echo ""
-echo "Services:"
-echo "  Supabase API:    http://localhost:54321"
-echo "  Supabase Studio: http://localhost:3001"
-echo "  Python API:      http://localhost:8080"
-echo "  Mailpit (email): http://localhost:8025"
-echo "  PostgreSQL:      localhost:5432"
-echo ""
-echo "To start the frontend:"
-echo "  cd frontend && npm run dev"
-echo ""
-echo "Frontend will be at: http://localhost:3000"
+Local env files are ready.
+
+Next:
+1. Open .env, frontend/.env, and api/.env
+2. In frontend/.env set:
+   NUXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+   NUXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY from root .env>
+   NUXT_PUBLIC_API_URL=http://localhost:8080
+3. In api/.env set:
+   SUPABASE_URL=http://localhost:54321
+   SUPABASE_ANON_KEY=<ANON_KEY from root .env>
+   SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY from root .env>
+   INTERNAL_API_KEY=<shared key for internal API routes>
+4. Run:
+   npm run verify:config
+   npm run install:all
+   npm run dev:stack
+   npm run dev:api
+   npm run dev:frontend
+
+EOF

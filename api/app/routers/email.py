@@ -9,11 +9,16 @@ from app.models.email import (
 )
 from app.services.email import EmailService
 from app.config import Settings, get_settings
+from app.security import verify_internal_api_key
 import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/email", tags=["Email"])
+router = APIRouter(
+    prefix="/email",
+    tags=["Email"],
+    dependencies=[Depends(verify_internal_api_key)],
+)
 
 
 def get_email_service(settings: Settings = Depends(get_settings)) -> EmailService:

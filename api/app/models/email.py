@@ -1,6 +1,6 @@
 """Email request/response models."""
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from typing import Optional
 
 
@@ -14,8 +14,8 @@ class RegistrationEmailRequest(EmailRequest):
     """Email sent after user registers."""
     parent_name: str = Field(..., min_length=1, description="Parent's full name")
     child_name: str = Field(..., min_length=1, description="Child's name")
-    login_url: str = Field(..., description="Login URL for the platform")
-    magic_link: Optional[str] = Field(None, description="Magic link for passwordless login")
+    login_url: HttpUrl = Field(..., description="Login URL for the platform")
+    magic_link: Optional[HttpUrl] = Field(None, description="Magic link for passwordless login")
 
 
 class EventRegistrationEmailRequest(EmailRequest):
@@ -26,12 +26,12 @@ class EventRegistrationEmailRequest(EmailRequest):
     event_date: str = Field(..., description="Event date formatted")
     event_time: str = Field(..., description="Event time formatted")
     event_location: str = Field(..., description="Event location")
-    confirmation_url: Optional[str] = Field(None, description="Confirmation URL")
+    confirmation_url: Optional[HttpUrl] = Field(None, description="Confirmation URL")
 
 
 class PasswordResetEmailRequest(EmailRequest):
     """Email sent for password reset."""
-    reset_link: str = Field(..., description="Password reset link")
+    reset_link: HttpUrl = Field(..., description="Password reset link")
 
 
 class EmailResponse(BaseModel):
