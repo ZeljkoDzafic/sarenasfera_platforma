@@ -51,6 +51,7 @@ The project has a strong product direction, a credible Supabase-first architectu
 - Auth composable and middleware exist
 - Actual auth pages are missing from `frontend/pages/auth/`
 - Redirect paths already assume auth routes exist
+- Public layout and multiple public pages link to `/auth/login` and `/auth/register`
 
 ### FastAPI
 
@@ -66,6 +67,15 @@ The project has a strong product direction, a credible Supabase-first architectu
 
 - Some pages are backed by live Supabase queries
 - Some pages still contain placeholder or demo data
+
+### Route integrity
+
+- Some routes referenced by UI are missing or likely inconsistent
+- Known examples:
+  - `/auth/login`
+  - `/auth/register`
+  - `/admin/sessions/new`
+  - `/admin/observe`
 
 ## Missing Or Unverified
 
@@ -84,10 +94,11 @@ The project has a strong product direction, a credible Supabase-first architectu
 1. Finish auth pages and verify role flows end-to-end.
 2. Validate migrations and RLS against a fresh local Supabase instance.
 3. Replace placeholder frontend data with real queries or explicit mock boundaries.
-4. Expand FastAPI to the first real production use case:
+4. Fix route dead ends and broken CTA destinations.
+5. Expand FastAPI to the first real production use case:
    PDF reports or transactional email.
-5. Turn deployment docs into executable infrastructure and release steps.
-6. Add monitoring, backups, and operational runbooks before production traffic.
+6. Turn deployment docs into executable infrastructure and release steps.
+7. Add monitoring, backups, and operational runbooks before production traffic.
 
 ## Status Semantics
 
@@ -101,4 +112,3 @@ Use these meanings when updating docs:
   - Designed in docs, not delivered.
 - `historical`
   - Useful context, but not an active guide for implementation.
-

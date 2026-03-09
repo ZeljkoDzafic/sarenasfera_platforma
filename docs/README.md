@@ -9,8 +9,10 @@ If you are a human contributor or an AI agent, read documents in this order:
 1. `docs/PROJECT-STATUS.md`
 2. `docs/AGENT-HANDBOOK.md`
 3. `docs/PRODUCTION-READINESS.md`
-4. `docs/arhitektura/README.md`
-5. `docs/TASKS.md`
+4. `docs/PRODUCTION-SPRINT.md`
+5. `docs/AGENT-ASSIGNMENTS.md`
+6. `docs/arhitektura/README.md`
+7. `docs/TASKS.md`
 
 ## What Each Document Means
 
@@ -20,6 +22,10 @@ If you are a human contributor or an AI agent, read documents in this order:
   - Execution rules for Codex, Claude, Qwen, and human contributors.
 - `PRODUCTION-READINESS.md`
   - Practical checklist to move fast without skipping critical production work.
+- `PRODUCTION-SPRINT.md`
+  - Shortest production path from current repo state.
+- `AGENT-ASSIGNMENTS.md`
+  - Parallel task split for Codex, Claude, and Qwen.
 - `arhitektura/`
   - Product and system design documents.
 - `TASKS.md`
@@ -44,4 +50,3 @@ Some documents remain valuable for context but are not active implementation gui
 - `docs/arhitektura/08-deployment.md` - partially outdated deployment direction
 - `docs/arhitektura/12-laravel-architecture.md` - alternative architecture, not active
 - `docs/arhitektura/13-architecture-comparison.md` - decision history
-
