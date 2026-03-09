@@ -334,7 +334,7 @@
   - Quick actions: add observation, mark attendance
 - **Output:** `pages/admin/index.vue`
 
-### T-402: Children Management (Admin)
+### ✅ T-402: Children Management (Admin) — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Full CRUD for children
 - **Acceptance criteria:**
@@ -349,7 +349,7 @@
   - Bulk actions (assign to group, export)
 - **Output:** `pages/admin/children/`
 
-### T-403: Groups Management
+### ✅ T-403: Groups Management — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Group CRUD
 - **Acceptance criteria:**
@@ -362,7 +362,7 @@
   - Capacity indicator
 - **Output:** `pages/admin/groups/`
 
-### T-404: Workshop Management
+### ✅ T-404: Workshop Management — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Workshop templates + session scheduling
 - **Acceptance criteria:**
@@ -375,7 +375,7 @@
   - Duplicate templates
 - **Output:** `pages/admin/workshops/`
 
-### T-405: Observation Entry (Mobile-First)
+### ✅ T-405: Observation Entry (Mobile-First) — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Quick observation entry — THE core admin feature
 - **Acceptance criteria:**
@@ -392,7 +392,7 @@
   - Draft saving (auto-save)
 - **Output:** `pages/admin/observations/`
 
-### T-406: Attendance Tracking
+### ✅ T-406: Attendance Tracking — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Daily attendance management
 - **Acceptance criteria:**
@@ -406,7 +406,7 @@
   - Export to CSV
 - **Output:** `pages/admin/attendance/`
 
-### T-407: User Management (Admin only)
+### ✅ T-407: User Management (Admin only) — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Manage platform users
 - **Acceptance criteria:**
@@ -420,7 +420,7 @@
   - Admin-only access
 - **Output:** `pages/admin/users/`
 
-### T-408: Messaging
+### ✅ T-408: Messaging — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Parent-staff communication
 - **Acceptance criteria:**
@@ -432,7 +432,7 @@
   - Realtime via Supabase subscriptions
 - **Output:** `pages/admin/messages/`
 
-### T-409: Statistics & Analytics
+### ✅ T-409: Statistics & Analytics — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Admin analytics dashboard
 - **Acceptance criteria:**
@@ -767,7 +767,7 @@
   - Responsive, mobile-first
 - **Output:** `pages/events/`, migration file
 
-### T-831: Workshop Registration Form (creates account)
+### ✅ T-831: Workshop Registration Form (creates account) — DONE (Claude)
 - **Depends on:** T-830, T-200
 - **Agent scope:** THE primary acquisition funnel
 - **Acceptance criteria:**
@@ -1240,3 +1240,84 @@ WEEK 13: T-1001, T-1002, T-1011, T-1013 (CHILD TIMELINE + DOMAIN DETAIL + COURSE
 WEEK 14: T-1003, T-1004, T-1005, T-1012, T-1014 (MILESTONE ENTRY + PARENT OBS + EVENTS + ADMIN EDU)
 WEEK 15: T-702, T-703 (production deploy)
 ```
+
+---
+
+## Agent Work Division (Claude + Codex + Qwen)
+
+> Updated: 2026-03-09. Three parallel agents working simultaneously.
+
+### 🤖 CLAUDE — Infrastruktura, DB, Admin, Javne stranice
+**Status:** Aktivno radi
+**Završeno:** T-601, T-602, T-603, T-830, T-900, T-102, T-103, T-302, T-304, T-305, T-306, T-307, T-400, T-401, T-402, T-403, T-404, T-405, T-406, T-407, T-408, T-409, T-831, 019_advanced_tables.sql
+
+**Sljedeće (Claude):**
+- `T-832`: Admin upravljanje javnim događajima (`pages/admin/events/`)
+- `T-840`: Stranica s cijenama (`pages/pricing.vue`) — deps: T-820
+- `T-810`: Feature flags DB + composable (`composables/useFeatureFlags.ts`)
+- `T-1000`: Milestones DB migracija + seed
+- `T-1001`: Child Growth Timeline (`pages/portal/children/[id]/timeline.vue`)
+- `T-203`: Poboljšane RLS politike s helper funkcijama (iz 019_advanced_tables.sql)
+
+---
+
+### 🤖 CODEX — Auth, Landing, UI komponente, FastAPI
+**Status:** Aktivno radi
+**Ne dirati:** T-201 (auth stranice), T-600 (landing page), T-800 (UI komponente), T-500–T-504 (FastAPI)
+
+**Sljedeće (Codex):**
+- `T-303`: Staff portal — dnevni view (`pages/portal/staff/`)
+- `T-820`: Subscription tiers DB + composable
+- `T-821`: Upgrade UI stranica
+- `T-811`: Feature flags admin UI
+- `T-812`: Coming Soon stranica za zaključane feature-e
+
+---
+
+### 🤖 QWEN — Growth features, Edukacioni sadržaj, Portal napredne funkcije
+**Status:** Novi agent — početak rada
+**Zadužen za:**
+
+- `T-901`: Referral program (`pages/referrals.vue`, `pages/portal/referrals.vue`)
+  - Referral linkovi, tracking, nagradni sistem
+  - Tabela: `referrals` (već u DB iz 017_crm_referrals.sql)
+
+- `T-902`: Pioneer program stranica (`pages/portal/pioneer.vue`)
+  - Pionirski zid, badge, ekskluzivni pristup
+  - Tabela: `pioneer_wall`, `pioneer_slots` (već u DB)
+
+- `T-903`: Activity library (`pages/portal/activities.vue` extension + `pages/activities.vue` public)
+  - Pretraga po domenama, uzrastu, ključnim riječima
+  - Tabela: `home_activities` (već u DB)
+
+- `T-904`: Developmental path view (`pages/portal/children/[id]/path.vue`)
+  - Vizualizacija puta razvoja djeteta po domenama
+  - Koristi: `child_lesson_records`, `assessments`, `child_milestones`
+
+- `T-905`: Subscription gate components
+  - `components/portal/FeatureGate.vue` — prikazuje locked content
+  - `components/portal/UpgradeBanner.vue` — teaser za premijum
+
+- `T-1010`: Education DB migracija
+  - Tabele: `courses`, `course_lessons`, `course_enrollments`, `educational_resources`
+  - Treba kreirati: `supabase/migrations/020_education.sql`
+
+- `T-1002`: Domain detail view (`pages/portal/domains/[domain].vue`)
+  - Detalji jedne domene za dijete: vještine, milestoni, preporučene aktivnosti
+  - Deps: T-302 ✅, T-1000
+
+**QWEN — Pravila:**
+- Koristi iste konvencije: `useAsyncData`, `useSupabase()`, `useAuth()`
+- Layout: `portal` za portal stranice, `default` za javne
+- Tailwind klase: `.card`, `.btn-primary`, `.btn-secondary`, `.input`, `.label`
+- Brand boje: primary-500 (#9b51e0), brand-red (#cf2e2e), brand-blue (#0693e3)
+- Sve DB tabele su kreirana u migracijama 010–019
+- Markiraj završene taskove sa ✅ DONE (Qwen) u ovom fajlu
+
+---
+
+### Koordinacija između agenata
+- Svaki agent markiraj završene taskove u `TASKS.md`
+- Push na granu: `claude/review-tasks-documentation-Dj0Ne`
+- Prije početka rada, `git pull` da se izbjegnu konflikti
+- Nemoj dirati fajlove koje drugi agent rade paralelno
