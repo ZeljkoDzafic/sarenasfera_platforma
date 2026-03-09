@@ -161,13 +161,14 @@ Severity: High
 Current state:
 
 - Python syntax compiles
-- frontend typecheck cannot be confirmed in this workspace because local `nuxt` binary is not installed
+- `npm run verify:config` passes
+- frontend `npm run typecheck` passes
+- frontend `npm run build` passes
 
 Required:
 
-- run `npm run install:all`
-- run `npm run typecheck`
 - add and run real API and frontend smoke tests
+- run auth E2E and RLS verification against a live local stack
 
 ### 5. Placeholder or synthetic data still exists in some admin/portal surfaces
 
@@ -185,6 +186,9 @@ Known example:
 ## Verification Performed In This Pass
 
 - Python syntax compile passed for current FastAPI sources
+- `npm run verify:config` passed
+- frontend `npm run typecheck` passed
+- frontend `npm run build` passed
 - static config review passed for:
   - production compose env wiring
   - Kong declarative routing
@@ -198,4 +202,4 @@ Do not call the platform production-ready until these are complete:
 2. auth flow verification
 3. RLS verification
 4. production compose boot on a real host with valid `.env.production`
-5. frontend typecheck/build pass with installed dependencies
+5. rollback and restore drill on the target deployment model

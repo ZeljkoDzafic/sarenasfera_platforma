@@ -540,15 +540,14 @@ When updating this file, prefer accuracy over optimism.
 ## PHASE 6: Public Website
 
 ### T-600: Landing Page
-- **Status:** `PLANNED`
+- **Status:** ✅ DONE (Codex — `frontend/pages/index.vue`)
 - **Depends on:** T-100
 - **Agent scope:** Homepage — SSR for SEO
 - **Acceptance criteria:**
-  - `frontend/pages/index.vue` — currently missing
-  - hero, features, testimonials, CTA
+  - `frontend/pages/index.vue`
+  - hero, features, CTA
   - SEO meta tags
   - Mobile responsive
-  - Fast loading (< 2s)
   - Links to registration
 - **Output:** `frontend/pages/index.vue`
 

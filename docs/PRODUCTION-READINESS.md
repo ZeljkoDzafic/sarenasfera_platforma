@@ -65,6 +65,14 @@ All items below must be true before the status can change to production-ready.
 - production build completes successfully
 - API startup and health checks pass with production-like env values
 
+Current evidence recorded on 2026-03-09:
+
+- root `npm run verify:config` passed after `.env.production.example` was corrected to a valid Compose env-file format
+- frontend `npm run typecheck` passed after strict TypeScript cleanup
+- frontend `npm run build` passed, including Nitro prerender for `/`, `/program`, `/contact`, and `/resources`
+- `python3 -m compileall api/app` passed
+- this does not remove the remaining launch blockers around auth E2E, RLS verification, and real-host deployment validation
+
 ### 5. Operational safety exists
 
 - backups and restore steps are documented and exercised

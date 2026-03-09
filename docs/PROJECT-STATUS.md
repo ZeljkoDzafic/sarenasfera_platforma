@@ -20,7 +20,7 @@ The project has a strong product direction, a credible Supabase-first architectu
 ### Frontend foundation
 
 - Nuxt app scaffolded and configured
-- Public pages exist for `program`, `blog`, `resources`, `contact`, `pricing`, `referrals`, `events`, `quiz`
+- Public pages exist for `/`, `program`, `blog`, `resources`, `contact`, `pricing`, `referrals`, `events`, `quiz`
 - Parent portal pages exist under `frontend/pages/portal/`
 - Admin pages exist under `frontend/pages/admin/`
 - Core composables exist:
@@ -43,6 +43,9 @@ The project has a strong product direction, a credible Supabase-first architectu
 
 - GitHub Actions run frontend type/build checks
 - GitHub Actions run Python syntax validation
+- Local frontend verification now passes from an installed environment:
+  - `cd frontend && npm run typecheck`
+  - `cd frontend && npm run build`
 
 ## Partially Implemented
 

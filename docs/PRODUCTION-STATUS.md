@@ -23,6 +23,11 @@ The platform has credible production scaffolding, but it is not yet ready for a 
 - application-level sanitization for rich education content
 - seed data and portal/admin surfaces sufficient for meaningful local testing
 - production and security documentation that now reflects blockers more honestly
+- local verification evidence now exists for:
+  - `npm run verify:config`
+  - `cd frontend && npm run typecheck`
+  - `cd frontend && npm run build`
+  - `python3 -m compileall api/app`
 
 ## Still Blocking Launch
 
@@ -30,7 +35,6 @@ The platform has credible production scaffolding, but it is not yet ready for a 
 - RLS is not yet verified role-by-role and table-by-table
 - production rollout on a real host with real certificates is not yet verified
 - rollback and restore drills are not yet recorded as completed
-- frontend typecheck/build is not yet recorded from a clean installed environment
 - some placeholder or synthetic data remains on selected surfaces
 
 ## Readiness Estimate
@@ -50,7 +54,6 @@ Use this only as a planning aid, not as sign-off.
 
 1. Run [AUTH-E2E-CHECKLIST.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/AUTH-E2E-CHECKLIST.md).
 2. Run [DATABASE-RLS-VERIFICATION.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/DATABASE-RLS-VERIFICATION.md).
-3. Run frontend checks from a clean installed environment and record results.
-4. Boot the production compose stack on a real target host.
-5. Execute one rollback drill and one restore drill.
-6. Record evidence in docs, not just terminal output.
+3. Boot the production compose stack on a real target host.
+4. Execute one rollback drill and one restore drill.
+5. Record evidence in docs, not just terminal output.
