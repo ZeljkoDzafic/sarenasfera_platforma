@@ -30,6 +30,7 @@
 ## PHASE 1: Project Scaffolding & DevOps
 
 ### T-100: Initialize Nuxt 3 Project
+- **Status:** ✅ DONE
 - **Depends on:** Nothing
 - **Agent scope:** Create Nuxt 3 project in `frontend/`
 - **Acceptance criteria:**
@@ -43,6 +44,7 @@
 - **Output:** `frontend/` directory with working `npm run dev`
 
 ### T-101: Docker Compose — Local Supabase
+- **Status:** ✅ DONE
 - **Depends on:** Nothing
 - **Agent scope:** Create Docker setup for local Supabase
 - **Acceptance criteria:**
@@ -57,6 +59,7 @@
 - **Test:** `docker compose up -d` → all services healthy
 
 ### T-102: Database Migrations (SQL)
+- **Status:** ✅ DONE (Claude — `supabase/migrations/010-018_*.sql`)
 - **Depends on:** T-101
 - **Agent scope:** Convert schema doc to executable SQL migrations
 - **Input:** `docs/arhitektura/03-database-schema.md` (61 tables)
@@ -80,6 +83,7 @@
 - **Test:** Run against local PostgreSQL, no errors
 
 ### T-103: Seed Data
+- **Status:** ✅ DONE (Claude — `supabase/migrations/018_seed.sql`)
 - **Depends on:** T-102
 - **Agent scope:** Create seed data for development/demo
 - **Acceptance criteria:**
@@ -98,6 +102,7 @@
 - **Output:** `supabase/seed.sql`
 
 ### T-104: GitHub Actions CI/CD
+- **Status:** ✅ DONE
 - **Depends on:** T-100
 - **Agent scope:** Set up CI/CD pipeline
 - **Acceptance criteria:**
@@ -114,6 +119,7 @@
 - **Output:** `.github/workflows/*.yml`
 
 ### T-105: Environment & Config
+- **Status:** ✅ DONE
 - **Depends on:** T-100, T-101
 - **Agent scope:** Environment files and configuration
 - **Acceptance criteria:**
@@ -129,6 +135,7 @@
 ## PHASE 2: Authentication & Authorization
 
 ### T-200: Supabase Client Composable
+- **Status:** ✅ DONE
 - **Depends on:** T-100, T-101
 - **Agent scope:** Create Nuxt composable for Supabase
 - **Acceptance criteria:**
@@ -156,6 +163,7 @@
 - **Output:** `pages/auth/*.vue`
 
 ### T-202: Auth Middleware
+- **Status:** ✅ DONE
 - **Depends on:** T-200
 - **Agent scope:** Route protection middleware
 - **Acceptance criteria:**
@@ -241,6 +249,7 @@
 - **Output:** Passport components + RadarChart
 
 ### T-304: Workshop Calendar ✅ DONE (Codex)
+### ✅ T-304: Workshop Calendar — DONE (Claude + Codex)
 - **Depends on:** T-300
 - **Agent scope:** Workshop schedule and materials
 - **Acceptance criteria:**
@@ -254,6 +263,8 @@
 - **Output:** `pages/portal/workshops.vue`, calendar components
 
 ### T-305: Home Activities ✅ DONE (Codex)
+### T-305: Home Activities
+- **Status:** ✅ DONE (Claude — `pages/portal/activities.vue`)
 - **Depends on:** T-300
 - **Agent scope:** Activities parents can do at home
 - **Acceptance criteria:**
@@ -266,6 +277,7 @@
 - **Output:** `pages/portal/activities.vue`
 
 ### T-306: Photo Gallery
+- **Status:** ✅ DONE (Claude — `pages/portal/gallery.vue`)
 - **Depends on:** T-300
 - **Agent scope:** Child photos from observations
 - **Acceptance criteria:**
@@ -277,6 +289,7 @@
 - **Output:** `pages/portal/gallery.vue`
 
 ### T-307: Profile Settings
+- **Status:** ✅ DONE (Claude — `pages/portal/settings.vue`)
 - **Depends on:** T-300
 - **Agent scope:** Parent profile management
 - **Acceptance criteria:**
@@ -293,6 +306,7 @@
 ## PHASE 4: Admin Panel
 
 ### T-400: Admin Layout
+- **Status:** ✅ DONE (layouts/admin.vue already exists)
 - **Depends on:** T-202
 - **Agent scope:** Admin shell with navigation
 - **Acceptance criteria:**
@@ -304,6 +318,7 @@
 - **Output:** `layouts/admin.vue`, admin nav components
 
 ### T-401: Admin Dashboard
+- **Status:** ✅ DONE (Claude — `pages/admin/index.vue`)
 - **Depends on:** T-400
 - **Agent scope:** Admin overview with key metrics
 - **Acceptance criteria:**
@@ -316,7 +331,7 @@
   - Quick actions: add observation, mark attendance
 - **Output:** `pages/admin/index.vue`
 
-### T-402: Children Management (Admin)
+### ✅ T-402: Children Management (Admin) — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Full CRUD for children
 - **Acceptance criteria:**
@@ -331,7 +346,7 @@
   - Bulk actions (assign to group, export)
 - **Output:** `pages/admin/children/`
 
-### T-403: Groups Management
+### ✅ T-403: Groups Management — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Group CRUD
 - **Acceptance criteria:**
@@ -344,7 +359,7 @@
   - Capacity indicator
 - **Output:** `pages/admin/groups/`
 
-### T-404: Workshop Management
+### ✅ T-404: Workshop Management — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Workshop templates + session scheduling
 - **Acceptance criteria:**
@@ -357,7 +372,7 @@
   - Duplicate templates
 - **Output:** `pages/admin/workshops/`
 
-### T-405: Observation Entry (Mobile-First)
+### ✅ T-405: Observation Entry (Mobile-First) — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Quick observation entry — THE core admin feature
 - **Acceptance criteria:**
@@ -374,7 +389,7 @@
   - Draft saving (auto-save)
 - **Output:** `pages/admin/observations/`
 
-### T-406: Attendance Tracking
+### ✅ T-406: Attendance Tracking — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Daily attendance management
 - **Acceptance criteria:**
@@ -388,7 +403,7 @@
   - Export to CSV
 - **Output:** `pages/admin/attendance/`
 
-### T-407: User Management (Admin only)
+### ✅ T-407: User Management (Admin only) — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Manage platform users
 - **Acceptance criteria:**
@@ -402,7 +417,7 @@
   - Admin-only access
 - **Output:** `pages/admin/users/`
 
-### T-408: Messaging
+### ✅ T-408: Messaging — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Parent-staff communication
 - **Acceptance criteria:**
@@ -414,7 +429,7 @@
   - Realtime via Supabase subscriptions
 - **Output:** `pages/admin/messages/`
 
-### T-409: Statistics & Analytics
+### ✅ T-409: Statistics & Analytics — DONE (Claude)
 - **Depends on:** T-400
 - **Agent scope:** Admin analytics dashboard
 - **Acceptance criteria:**
@@ -506,6 +521,7 @@
 - **Output:** `pages/index.vue`
 
 ### T-601: Program Page
+- **Status:** ✅ DONE (Claude — `pages/program.vue`)
 - **Depends on:** T-100
 - **Agent scope:** Program overview
 - **Acceptance criteria:**
@@ -517,6 +533,7 @@
 - **Output:** `pages/program.vue`
 
 ### T-602: Blog
+- **Status:** ✅ DONE (Claude — `pages/blog/index.vue`, `pages/blog/[slug].vue`)
 - **Depends on:** T-100
 - **Agent scope:** Blog with SSR for SEO
 - **Acceptance criteria:**
@@ -528,6 +545,7 @@
 - **Output:** `pages/blog/`
 
 ### T-603: Contact & Resources
+- **Status:** ✅ DONE (Claude — `pages/contact.vue`, `pages/resources.vue`)
 - **Depends on:** T-100
 - **Agent scope:** Contact form + downloadable resources
 - **Acceptance criteria:**
@@ -594,6 +612,7 @@
 > Style: Colorful ("sarene"), rounded corners, soft shadows, playful but professional
 
 ### T-790: Brand Assets & Fonts Setup
+- **Status:** ✅ DONE
 - **Depends on:** T-100
 - **Agent scope:** Set up logo, favicon, fonts, and brand foundation
 - **Acceptance criteria:**
@@ -729,6 +748,7 @@
 - **Output:** `pages/admin/subscriptions.vue`
 
 ### T-830: Public Events Page
+- **Status:** ✅ DONE (Claude — `pages/events/index.vue`, `pages/events/[slug].vue`, `supabase/migrations/001_events.sql`)
 - **Depends on:** T-100
 - **Agent scope:** Public workshop/event listing (SSR, no auth)
 - **Acceptance criteria:**
@@ -744,7 +764,7 @@
   - Responsive, mobile-first
 - **Output:** `pages/events/`, migration file
 
-### T-831: Workshop Registration Form (creates account)
+### ✅ T-831: Workshop Registration Form (creates account) — DONE (Claude)
 - **Depends on:** T-830, T-200
 - **Agent scope:** THE primary acquisition funnel
 - **Acceptance criteria:**
@@ -814,6 +834,7 @@
 > These features drive acquisition, retention, and upsell.
 
 ### T-900: Development Quiz (Lead Generation) — CRITICAL
+- **Status:** ✅ DONE (Claude — `pages/quiz/index.vue`, `supabase/migrations/002_quiz.sql`)
 - **Depends on:** T-100
 - **Agent scope:** Public quiz that profiles a child's development and captures leads
 - **Acceptance criteria:**
@@ -1216,3 +1237,84 @@ WEEK 13: T-1001, T-1002, T-1011, T-1013 (CHILD TIMELINE + DOMAIN DETAIL + COURSE
 WEEK 14: T-1003, T-1004, T-1005, T-1012, T-1014 (MILESTONE ENTRY + PARENT OBS + EVENTS + ADMIN EDU)
 WEEK 15: T-702, T-703 (production deploy)
 ```
+
+---
+
+## Agent Work Division (Claude + Codex + Qwen)
+
+> Updated: 2026-03-09. Three parallel agents working simultaneously.
+
+### 🤖 CLAUDE — Infrastruktura, DB, Admin, Javne stranice
+**Status:** Aktivno radi
+**Završeno:** T-601, T-602, T-603, T-830, T-900, T-102, T-103, T-302, T-304, T-305, T-306, T-307, T-400, T-401, T-402, T-403, T-404, T-405, T-406, T-407, T-408, T-409, T-831, 019_advanced_tables.sql
+
+**Sljedeće (Claude):**
+- `T-832`: Admin upravljanje javnim događajima (`pages/admin/events/`)
+- `T-840`: Stranica s cijenama (`pages/pricing.vue`) — deps: T-820
+- `T-810`: Feature flags DB + composable (`composables/useFeatureFlags.ts`)
+- `T-1000`: Milestones DB migracija + seed
+- `T-1001`: Child Growth Timeline (`pages/portal/children/[id]/timeline.vue`)
+- `T-203`: Poboljšane RLS politike s helper funkcijama (iz 019_advanced_tables.sql)
+
+---
+
+### 🤖 CODEX — Auth, Landing, UI komponente, FastAPI
+**Status:** Aktivno radi
+**Ne dirati:** T-201 (auth stranice), T-600 (landing page), T-800 (UI komponente), T-500–T-504 (FastAPI)
+
+**Sljedeće (Codex):**
+- `T-303`: Staff portal — dnevni view (`pages/portal/staff/`)
+- `T-820`: Subscription tiers DB + composable
+- `T-821`: Upgrade UI stranica
+- `T-811`: Feature flags admin UI
+- `T-812`: Coming Soon stranica za zaključane feature-e
+
+---
+
+### 🤖 QWEN — Growth features, Edukacioni sadržaj, Portal napredne funkcije
+**Status:** Novi agent — početak rada
+**Zadužen za:**
+
+- `T-901`: Referral program (`pages/referrals.vue`, `pages/portal/referrals.vue`)
+  - Referral linkovi, tracking, nagradni sistem
+  - Tabela: `referrals` (već u DB iz 017_crm_referrals.sql)
+
+- `T-902`: Pioneer program stranica (`pages/portal/pioneer.vue`)
+  - Pionirski zid, badge, ekskluzivni pristup
+  - Tabela: `pioneer_wall`, `pioneer_slots` (već u DB)
+
+- `T-903`: Activity library (`pages/portal/activities.vue` extension + `pages/activities.vue` public)
+  - Pretraga po domenama, uzrastu, ključnim riječima
+  - Tabela: `home_activities` (već u DB)
+
+- `T-904`: Developmental path view (`pages/portal/children/[id]/path.vue`)
+  - Vizualizacija puta razvoja djeteta po domenama
+  - Koristi: `child_lesson_records`, `assessments`, `child_milestones`
+
+- `T-905`: Subscription gate components
+  - `components/portal/FeatureGate.vue` — prikazuje locked content
+  - `components/portal/UpgradeBanner.vue` — teaser za premijum
+
+- `T-1010`: Education DB migracija
+  - Tabele: `courses`, `course_lessons`, `course_enrollments`, `educational_resources`
+  - Treba kreirati: `supabase/migrations/020_education.sql`
+
+- `T-1002`: Domain detail view (`pages/portal/domains/[domain].vue`)
+  - Detalji jedne domene za dijete: vještine, milestoni, preporučene aktivnosti
+  - Deps: T-302 ✅, T-1000
+
+**QWEN — Pravila:**
+- Koristi iste konvencije: `useAsyncData`, `useSupabase()`, `useAuth()`
+- Layout: `portal` za portal stranice, `default` za javne
+- Tailwind klase: `.card`, `.btn-primary`, `.btn-secondary`, `.input`, `.label`
+- Brand boje: primary-500 (#9b51e0), brand-red (#cf2e2e), brand-blue (#0693e3)
+- Sve DB tabele su kreirana u migracijama 010–019
+- Markiraj završene taskove sa ✅ DONE (Qwen) u ovom fajlu
+
+---
+
+### Koordinacija između agenata
+- Svaki agent markiraj završene taskove u `TASKS.md`
+- Push na granu: `claude/review-tasks-documentation-Dj0Ne`
+- Prije početka rada, `git pull` da se izbjegnu konflikti
+- Nemoj dirati fajlove koje drugi agent rade paralelno
