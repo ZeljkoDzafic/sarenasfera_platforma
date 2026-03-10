@@ -182,17 +182,18 @@ const loginLink = computed(() => {
 async function createChildForParent(parentId: string) {
   if (!form.childName || !form.childDob) return
 
-  const { data: child, error: childError } = await supabase
+  const childId = crypto.randomUUID()
+
+  const { error: childError } = await supabase
     .from('children')
     .insert({
+      id: childId,
       full_name: form.childName,
       date_of_birth: form.childDob,
       is_active: true,
     })
-    .select('id')
-    .single()
 
-  if (childError || !child) {
+  if (childError) {
     throw new Error(childError?.message ?? 'Nije moguće kreirati profil djeteta.')
   }
 
@@ -200,7 +201,7 @@ async function createChildForParent(parentId: string) {
     .from('parent_children')
     .insert({
       parent_id: parentId,
-      child_id: child.id,
+      child_id: childId,
       relationship: 'parent',
       is_primary: true,
       can_pickup: true,

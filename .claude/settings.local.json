@@ -19,7 +19,10 @@
       "Bash(ls:*)",
       "Bash(docker compose:*)",
       "Bash(npm cache clean:*)",
-      "Bash(sudo chown:*)"
+      "Bash(sudo chown:*)",
+      "Bash(npm audit fix:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)"
     ]
   }
 }

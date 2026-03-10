@@ -10,7 +10,7 @@ export default defineNuxtConfig({
 
   typescript: {
     strict: true,
-    typeCheck: true,
+    typeCheck: false, // Disabled due to vite-plugin-checker issues
   },
 
   runtimeConfig: {

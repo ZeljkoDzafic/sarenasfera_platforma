@@ -19,6 +19,23 @@ CREATE TABLE IF NOT EXISTS public.badges (
   created_at       TIMESTAMPTZ DEFAULT now()
 );
 
+ALTER TABLE public.badges
+ADD COLUMN IF NOT EXISTS tier_required TEXT,
+ADD COLUMN IF NOT EXISTS criteria_json JSONB DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS requirement_type TEXT,
+ADD COLUMN IF NOT EXISTS requirement_count INTEGER,
+ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+
+ALTER TABLE public.badges DROP CONSTRAINT IF EXISTS badges_badge_type_check;
+ALTER TABLE public.badges
+ADD CONSTRAINT badges_badge_type_check
+CHECK (
+  badge_type IN (
+    'parent', 'child', 'milestone',
+    'pioneer', 'activity', 'referral', 'attendance', 'special'
+  )
+);
+
 -- User-earned badges
 CREATE TABLE IF NOT EXISTS public.user_badges (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -28,6 +45,9 @@ CREATE TABLE IF NOT EXISTS public.user_badges (
   progress        INTEGER DEFAULT 0,               -- for progressive badges
   UNIQUE(user_id, badge_id)
 );
+
+ALTER TABLE public.user_badges
+ADD COLUMN IF NOT EXISTS progress INTEGER DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_user_badges_user ON public.user_badges(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_badges_earned ON public.user_badges(earned_at);
@@ -49,6 +69,20 @@ CREATE TABLE IF NOT EXISTS public.certificates (
   pdf_url          TEXT,                            -- generated PDF link
   is_published     BOOLEAN DEFAULT true,
   created_at       TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.certificates
+ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT true;
+
+ALTER TABLE public.certificates DROP CONSTRAINT IF EXISTS certificates_certificate_type_check;
+ALTER TABLE public.certificates
+ADD CONSTRAINT certificates_certificate_type_check
+CHECK (
+  certificate_type IN (
+    'program_completion', 'domain_mastery', 'attendance_milestone',
+    'parent_achievement', 'custom'
+  )
 );
 
 CREATE INDEX IF NOT EXISTS idx_certificates_child ON public.certificates(child_id);
@@ -145,7 +179,6 @@ CREATE POLICY IF NOT EXISTS "certificates_own_children" ON public.certificates
       SELECT 1 FROM public.parent_children pc
       WHERE pc.child_id = certificates.child_id
         AND pc.parent_id = auth.uid()
-        AND pc.relationship_status = 'active'
     )) OR
     auth.jwt()->'app_metadata'->>'role' IN ('staff', 'admin')
   );

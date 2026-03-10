@@ -71,6 +71,7 @@ Current evidence recorded on 2026-03-09:
 - frontend `npm run typecheck` passed after strict TypeScript cleanup
 - frontend `npm run build` passed, including Nitro prerender for `/`, `/program`, `/contact`, and `/resources`
 - `python3 -m compileall api/app` passed
+- clean local Docker validation now proves that `auth` and `api` can boot, but the database migration chain still stops on late historical migration conflicts and is not yet fully green
 - this does not remove the remaining launch blockers around auth E2E, RLS verification, and real-host deployment validation
 
 ### 5. Operational safety exists

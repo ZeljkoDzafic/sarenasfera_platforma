@@ -35,6 +35,15 @@ CREATE TABLE IF NOT EXISTS public.forum_categories (
 CREATE INDEX IF NOT EXISTS idx_forum_categories_slug ON public.forum_categories(slug);
 CREATE INDEX IF NOT EXISTS idx_forum_categories_order ON public.forum_categories(sort_order);
 
+ALTER TABLE public.forum_categories
+ADD COLUMN IF NOT EXISTS color TEXT DEFAULT '#9b51e0',
+ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS topic_count INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS post_count INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS moderators UUID[],
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
 -- Forum topics
 CREATE TABLE IF NOT EXISTS public.forum_topics (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -73,6 +82,20 @@ CREATE TABLE IF NOT EXISTS public.forum_topics (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE public.forum_topics
+ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES public.forum_categories(id) ON DELETE CASCADE,
+ADD COLUMN IF NOT EXISTS child_id UUID REFERENCES public.children(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'published',
+ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS last_reply_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS last_reply_by UUID REFERENCES public.profiles(id),
+ADD COLUMN IF NOT EXISTS tags TEXT[];
+
+ALTER TABLE public.forum_topics DROP CONSTRAINT IF EXISTS forum_topics_status_check;
+ALTER TABLE public.forum_topics
+ADD CONSTRAINT forum_topics_status_check
+CHECK (status IN ('draft', 'published', 'hidden', 'archived'));
+
 CREATE INDEX IF NOT EXISTS idx_forum_topics_category ON public.forum_topics(category_id);
 CREATE INDEX IF NOT EXISTS idx_forum_topics_author ON public.forum_topics(author_id);
 CREATE INDEX IF NOT EXISTS idx_forum_topics_status ON public.forum_topics(status);
@@ -101,6 +124,11 @@ CREATE TABLE IF NOT EXISTS public.forum_posts (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.forum_posts
+ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS like_count INTEGER DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_forum_posts_topic ON public.forum_posts(topic_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_forum_posts_author ON public.forum_posts(author_id);

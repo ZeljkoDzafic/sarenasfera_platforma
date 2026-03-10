@@ -153,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'portal' })
+definePageMeta({ middleware: ['auth', 'role'], layout: 'portal' })
 useSeoMeta({ title: 'Kontrolna Tabla — Šarena Sfera' })
 
 const { user } = useAuth()

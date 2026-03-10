@@ -29,6 +29,38 @@ CREATE INDEX IF NOT EXISTS idx_milestones_active
   ON public.developmental_milestones(is_active);
 
 -- ─── Child Milestone Tracking ──────────────────────────────────────────────────
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'child_milestones'
+      AND column_name = 'skill_id'
+  ) AND NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'child_milestones'
+      AND column_name = 'milestone_id'
+  ) THEN
+    ALTER TABLE public.child_milestones RENAME TO child_skill_milestones_legacy;
+
+    IF EXISTS (
+      SELECT 1 FROM pg_class WHERE relkind = 'i' AND relname = 'idx_child_milestones_child'
+    ) THEN
+      ALTER INDEX public.idx_child_milestones_child RENAME TO idx_child_skill_milestones_child_legacy;
+    END IF;
+
+    IF EXISTS (
+      SELECT 1 FROM pg_class WHERE relkind = 'i' AND relname = 'idx_child_milestones_skill'
+    ) THEN
+      ALTER INDEX public.idx_child_milestones_skill RENAME TO idx_child_skill_milestones_skill_legacy;
+    END IF;
+  END IF;
+END
+$$;
+
 CREATE TABLE IF NOT EXISTS public.child_milestones (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   child_id        UUID REFERENCES public.children(id) ON DELETE CASCADE NOT NULL,
@@ -76,7 +108,6 @@ CREATE POLICY IF NOT EXISTS "child_milestones_parent_read"
       SELECT 1 FROM public.parent_children pc
       WHERE pc.child_id = child_milestones.child_id
         AND pc.parent_id = auth.uid()
-        AND pc.relationship_status = 'active'
     )
   );
 

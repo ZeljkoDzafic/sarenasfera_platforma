@@ -17,6 +17,8 @@ from slowapi.errors import RateLimitExceeded
 from app.config import get_settings
 from app.routers import email
 
+settings = get_settings()
+
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, settings.log_level.upper(), logging.INFO),
@@ -24,8 +26,6 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
-
-settings = get_settings()
 
 # Rate limiter
 limiter = Limiter(key_func=get_remote_address)

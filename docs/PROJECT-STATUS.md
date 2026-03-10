@@ -38,6 +38,11 @@ The project has a strong product direction, a credible Supabase-first architectu
 - Large Supabase migration set exists in `supabase/migrations/`
 - Feature flags, referrals, education, milestones, content, and events are represented in schema planning and migrations
 - Seed file exists
+- Fresh local stack validation is in progress and has already exposed real historical migration conflicts between:
+  - `012_curriculum.sql` and `020_developmental_milestones.sql`
+  - `016_billing_features.sql` and `022_phase8_features_tiers.sql`
+  - `017_crm_referrals.sql` and `024_forum_partners.sql`
+- Local compatibility fixes now exist for clean-boot validation, but the migration chain is still not fully proven end-to-end
 
 ### CI/CD baseline
 
@@ -82,6 +87,7 @@ The project has a strong product direction, a credible Supabase-first architectu
 
 - End-to-end auth flow
 - Verified RLS coverage for all tables
+- Fully clean database bootstrap through the entire migration chain
 - Generated database types
 - Test coverage beyond type/build checks
 - Observability and alerting

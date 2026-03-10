@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     supabase_service_role_key: str
 
     # Resend Email API
-    resend_api_key: str
+    resend_api_key: Optional[str] = None
     resend_from_email: str = "Šarena Sfera <noreply@sarenasfera.com>"
 
     # WeasyPrint PDF settings

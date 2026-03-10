@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS public.feature_interests (
 CREATE INDEX IF NOT EXISTS idx_feature_interests_user ON public.feature_interests(user_id);
 CREATE INDEX IF NOT EXISTS idx_feature_interests_feature ON public.feature_interests(feature_key);
 
+ALTER TABLE public.feature_interests
+ADD COLUMN IF NOT EXISTS notified_at TIMESTAMPTZ;
+
 -- ============================================================
 -- SUBSCRIPTION TIERS SYSTEM (T-820)
 -- ============================================================
@@ -67,6 +70,17 @@ CREATE TABLE IF NOT EXISTS public.subscription_plans (
 
 CREATE INDEX IF NOT EXISTS idx_subscription_plans_key ON public.subscription_plans(key);
 
+ALTER TABLE public.subscription_plans
+ADD COLUMN IF NOT EXISTS description TEXT,
+ADD COLUMN IF NOT EXISTS tier_level INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS max_activities INTEGER DEFAULT 10,
+ADD COLUMN IF NOT EXISTS max_observations INTEGER DEFAULT 3,
+ADD COLUMN IF NOT EXISTS includes_reports BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS includes_video BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS includes_forum BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS includes_expert BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
 -- User subscriptions
 CREATE TABLE IF NOT EXISTS public.subscriptions (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -92,6 +106,21 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.subscriptions
+ADD COLUMN IF NOT EXISTS plan_id UUID REFERENCES public.subscription_plans(id),
+ADD COLUMN IF NOT EXISTS start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+ADD COLUMN IF NOT EXISTS end_date DATE,
+ADD COLUMN IF NOT EXISTS payment_method TEXT,
+ADD COLUMN IF NOT EXISTS payment_ref TEXT,
+ADD COLUMN IF NOT EXISTS is_trial BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS trial_end_date DATE;
+
+UPDATE public.subscriptions s
+SET plan_id = sp.id
+FROM public.subscription_plans sp
+WHERE s.plan_id IS NULL
+  AND sp.key = s.plan_key;
 
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON public.subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_plan ON public.subscriptions(plan_id);
@@ -121,6 +150,13 @@ CREATE TABLE IF NOT EXISTS public.payments (
 
 CREATE INDEX IF NOT EXISTS idx_payments_user ON public.payments(user_id);
 CREATE INDEX IF NOT EXISTS idx_payments_subscription ON public.payments(subscription_id);
+
+ALTER TABLE public.payments
+ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'BAM',
+ADD COLUMN IF NOT EXISTS payment_date TIMESTAMPTZ DEFAULT now(),
+ADD COLUMN IF NOT EXISTS period_start DATE,
+ADD COLUMN IF NOT EXISTS period_end DATE;
+
 CREATE INDEX IF NOT EXISTS idx_payments_date ON public.payments(payment_date);
 
 -- Add subscription_tier to profiles (denormalized for performance)
@@ -272,8 +308,8 @@ CREATE OR REPLACE FUNCTION public.assign_free_tier_on_signup()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   -- Create free subscription
-  INSERT INTO public.subscriptions (user_id, plan_id, status, is_trial)
-  SELECT NEW.id, id, 'active', false
+  INSERT INTO public.subscriptions (user_id, plan_id, plan_key, status, is_trial)
+  SELECT NEW.id, id, key, 'active', false
   FROM public.subscription_plans
   WHERE key = 'free'
   ON CONFLICT DO NOTHING;

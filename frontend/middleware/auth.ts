@@ -1,5 +1,5 @@
-export default defineNuxtRouteMiddleware(async () => {
-  const { isAuthenticated, loading, init } = useAuth()
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { isAuthenticated, loading, init, role } = useAuth()
 
   // Initialize auth if not done yet
   if (loading.value) {
@@ -8,5 +8,13 @@ export default defineNuxtRouteMiddleware(async () => {
 
   if (!isAuthenticated.value) {
     return navigateTo('/auth/login')
+  }
+
+  if (to.path.startsWith('/portal') && role.value !== 'parent' && role.value !== 'admin') {
+    return navigateTo('/admin')
+  }
+
+  if (to.path.startsWith('/admin') && role.value !== 'staff' && role.value !== 'admin') {
+    return navigateTo('/portal')
   }
 })

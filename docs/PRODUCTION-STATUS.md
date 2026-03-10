@@ -28,11 +28,16 @@ The platform has credible production scaffolding, but it is not yet ready for a 
   - `cd frontend && npm run typecheck`
   - `cd frontend && npm run build`
   - `python3 -m compileall api/app`
+- local Docker stack validation is now materially further along:
+  - `auth` boots successfully against the local bootstrap schema
+  - `api` now starts successfully without requiring `RESEND_API_KEY` in local development
+  - clean-boot migration compatibility fixes were required across multiple historical migrations
 
 ## Still Blocking Launch
 
 - auth flow is not yet verified end-to-end on a clean stack
 - RLS is not yet verified role-by-role and table-by-table
+- clean local database bootstrap still stops before the end of the migration chain
 - production rollout on a real host with real certificates is not yet verified
 - rollback and restore drills are not yet recorded as completed
 - some placeholder or synthetic data remains on selected surfaces
@@ -54,6 +59,7 @@ Use this only as a planning aid, not as sign-off.
 
 1. Run [AUTH-E2E-CHECKLIST.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/AUTH-E2E-CHECKLIST.md).
 2. Run [DATABASE-RLS-VERIFICATION.md](/Users/zeljkodzafic/Documents/sarenasfera_platforma/docs/DATABASE-RLS-VERIFICATION.md).
-3. Boot the production compose stack on a real target host.
-4. Execute one rollback drill and one restore drill.
-5. Record evidence in docs, not just terminal output.
+3. Finish clean-stack migration compatibility validation through the final local migration.
+4. Boot the production compose stack on a real target host.
+5. Execute one rollback drill and one restore drill.
+6. Record evidence in docs, not just terminal output.

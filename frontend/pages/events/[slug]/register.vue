@@ -238,18 +238,19 @@ async function submit() {
     }
 
     // 3. Create child record
-    const { data: child, error: childErr } = await supabase
+    const childId = crypto.randomUUID()
+
+    const { error: childErr } = await supabase
       .from('children')
       .insert({
+        id: childId,
         full_name: form.child_name,
         date_of_birth: form.child_dob,
         allergies: form.allergies || null,
         is_active: true,
       })
-      .select('id')
-      .single()
 
-    if (childErr || !child) throw new Error(childErr?.message ?? 'Greška pri kreiranju profila djeteta.')
+    if (childErr) throw new Error(childErr?.message ?? 'Greška pri kreiranju profila djeteta.')
 
     // 4. Create event registration
     const { error: regErr } = await supabase

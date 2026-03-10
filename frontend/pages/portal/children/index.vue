@@ -188,23 +188,24 @@ async function addChild() {
   addError.value = ''
 
   try {
-    const { data: child, error: childErr } = await supabase
+    const childId = crypto.randomUUID()
+
+    const { error: childErr } = await supabase
       .from('children')
       .insert({
+        id: childId,
         full_name: newChild.full_name,
         nickname: newChild.nickname || null,
         date_of_birth: newChild.date_of_birth,
         gender: newChild.gender || null,
         allergies: newChild.allergies || null,
       })
-      .select('id')
-      .single()
 
-    if (childErr || !child) throw childErr
+    if (childErr) throw childErr
 
     await supabase.from('parent_children').insert({
       parent_id: user.value.id,
-      child_id: child.id,
+      child_id: childId,
       relationship: 'parent',
       is_primary: true,
     })

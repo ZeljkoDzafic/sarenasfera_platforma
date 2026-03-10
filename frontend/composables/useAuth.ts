@@ -79,13 +79,13 @@ export function useAuth() {
     return data
   }
 
-  async function signOut() {
-    const { error } = await supabase.auth.signOut()
+  async function signOut(redirectTo = '/auth/login') {
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
     if (error) throw error
     authState.session = null
     authState.user = null
     authState.role = null
-    return navigateTo('/auth/login')
+    return navigateTo(redirectTo)
   }
 
   async function resetPassword(email: string) {

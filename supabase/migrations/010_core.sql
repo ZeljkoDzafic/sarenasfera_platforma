@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS public.parent_children (
   parent_id    UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   child_id     UUID REFERENCES public.children(id) ON DELETE CASCADE,
   relationship TEXT DEFAULT 'parent'
-                 CHECK (relationship IN ('mother', 'father', 'guardian', 'grandparent', 'other')),
+                 CHECK (relationship IN ('parent', 'mother', 'father', 'guardian', 'grandparent', 'other')),
   is_primary   BOOLEAN DEFAULT true,
   can_pickup   BOOLEAN DEFAULT true,
   created_at   TIMESTAMPTZ DEFAULT now(),
@@ -150,6 +150,9 @@ CREATE POLICY IF NOT EXISTS "children_parent_read" ON public.children
     OR auth.jwt()->'app_metadata'->>'role' IN ('admin', 'staff')
   );
 
+CREATE POLICY IF NOT EXISTS "children_parent_insert" ON public.children
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
 CREATE POLICY IF NOT EXISTS "children_admin_all" ON public.children
   FOR ALL USING (auth.jwt()->'app_metadata'->>'role' IN ('admin', 'staff'));
 
@@ -159,6 +162,9 @@ CREATE POLICY IF NOT EXISTS "parent_children_own" ON public.parent_children
     parent_id = auth.uid()
     OR auth.jwt()->'app_metadata'->>'role' IN ('admin', 'staff')
   );
+
+CREATE POLICY IF NOT EXISTS "parent_children_parent_insert" ON public.parent_children
+  FOR INSERT WITH CHECK (parent_id = auth.uid());
 
 CREATE POLICY IF NOT EXISTS "parent_children_admin" ON public.parent_children
   FOR ALL USING (auth.jwt()->'app_metadata'->>'role' IN ('admin', 'staff'));

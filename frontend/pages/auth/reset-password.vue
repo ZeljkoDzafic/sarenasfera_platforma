@@ -75,7 +75,13 @@ async function handlePasswordUpdate() {
 
   try {
     await updatePassword(password.value)
-    await navigateTo('/auth/login?reset=1')
+    for (const storage of [window.localStorage, window.sessionStorage]) {
+      const keys = Object.keys(storage).filter((key) => key.startsWith('sb-'))
+      for (const key of keys) {
+        storage.removeItem(key)
+      }
+    }
+    window.location.assign('/auth/login?reset=1')
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Ažuriranje lozinke nije uspjelo.'
   } finally {
