@@ -5,7 +5,7 @@
       <div class="max-w-3xl mx-auto">
         <h1 class="font-display text-4xl font-bold mb-3">Kontakt</h1>
         <p class="text-white/90 text-lg">
-          Imate pitanje? Javite nam se — odgovaramo u roku od 24 sata.
+          Javite nam se za radionice, dječiju knjižaru, saradnju ili podršku roditeljima.
         </p>
       </div>
     </section>
@@ -37,8 +37,8 @@
                   </svg>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900 text-sm">Telefon / WhatsApp</p>
-                  <a href="tel:+38761000000" class="text-gray-600">+387 61 000 000</a>
+                  <p class="font-semibold text-gray-900 text-sm">Instagram</p>
+                  <a href="https://www.instagram.com/sarenasfera" target="_blank" rel="noreferrer" class="text-gray-600 hover:text-primary-600">@sarenasfera</a>
                 </div>
               </div>
 
@@ -50,8 +50,8 @@
                   </svg>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900 text-sm">Lokacija</p>
-                  <p class="text-gray-600">Sarajevo, Bosna i Hercegovina</p>
+                  <p class="font-semibold text-gray-900 text-sm">Adresa</p>
+                  <p class="text-gray-600">Bulevar vojvode Stepe Stepanovića 177, Banja Luka 78000</p>
                 </div>
               </div>
             </div>
@@ -62,17 +62,22 @@
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-600">Pon – Pet</span>
-                <span class="font-semibold">09:00 – 17:00</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">Subota</span>
-                <span class="font-semibold">09:00 – 13:00</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">Nedjelja</span>
-                <span class="text-gray-400">Zatvoreno</span>
+                <span class="font-semibold">08:30 – 16:30</span>
               </div>
             </div>
+          </div>
+
+          <div class="card">
+            <h3 class="font-semibold text-gray-900 mb-3">Kako možemo pomoći</h3>
+            <ul class="space-y-2 text-sm text-gray-600">
+              <li>Upiti o kreativnim radionicama i programu za djecu.</li>
+              <li>Informacije o knjižari, čitaonicama i edukativnim sadržajima.</li>
+              <li>Saradnje sa autorima, edukatorima i partnerima zajednice.</li>
+            </ul>
+            <p class="mt-4 text-sm text-gray-600">
+              Platformom upravlja Gordana Kuzmanović Džafić, a poslovanje ide kroz
+              <a href="https://technetis.net" target="_blank" rel="noreferrer" class="text-primary-600 hover:underline">Technetis s.p.</a>.
+            </p>
           </div>
         </div>
 

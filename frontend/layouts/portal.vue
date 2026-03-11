@@ -98,6 +98,18 @@ const navItems = [
     icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>',
   },
   {
+    to: '/portal/community',
+    label: 'Zajednica',
+    iconBgClass: 'bg-primary-100 text-primary-700',
+    icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v8l-4-4H7a2 2 0 01-2-2v-2m12-4V6a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h2l4 4v-4h4a2 2 0 002-2V8z"/></svg>',
+  },
+  {
+    to: '/portal/bazar',
+    label: 'Dječiji Bazar',
+    iconBgClass: 'bg-brand-amber/20 text-brand-amber',
+    icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l1.664 9.15A2 2 0 006.632 18h10.736a2 2 0 001.968-1.85L21 7M3 7h18M8 11h8M9 7V5a3 3 0 016 0v2"/></svg>',
+  },
+  {
     to: '/portal/settings',
     label: 'Postavke',
     iconBgClass: 'domain-bg-emotional text-domain-emotional',
@@ -117,6 +129,8 @@ const breadcrumbs = computed(() => {
     workshops: 'Radionice',
     education: 'Edukacija',
     activities: 'Aktivnosti',
+    community: 'Zajednica',
+    bazar: 'Dječiji Bazar',
     gallery: 'Galerija',
     referrals: 'Preporuči',
     pioneer: 'Pioniri',

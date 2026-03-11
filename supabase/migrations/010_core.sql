@@ -178,5 +178,5 @@ CREATE POLICY IF NOT EXISTS "locations_admin_all" ON public.locations
 
 -- ─── Seed: Default location ───────────────────────────────────────────────────
 INSERT INTO public.locations (name, city, email)
-VALUES ('Šarena Sfera Sarajevo', 'Sarajevo', 'info@sarenasfera.com')
+VALUES ('Šarena Sfera Banja Luka', 'Banja Luka', 'info@sarenasfera.com')
 ON CONFLICT DO NOTHING;

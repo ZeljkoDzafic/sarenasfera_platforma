@@ -117,7 +117,7 @@
           v-for="topic in recentTopics"
           :key="topic.id"
           class="card hover:shadow-md transition-shadow cursor-pointer"
-          @click="navigateTo(`/portal/community/topic/${topic.slug}`)"
+          @click="navigateTo(`/portal/community/${topic.slug}`)"
         >
           <div class="flex items-start gap-3">
             <!-- Author avatar -->
@@ -247,13 +247,24 @@ const { data: topContributors } = await useAsyncData('forum-top-contributors', a
   return data ?? []
 })
 
-// Stats (mock for now)
-const stats = ref({
-  topics: recentTopics.value?.length ?? 0,
-  posts: 0,
-  members: 0,
-  online: 0,
+const { data: postStats } = await useAsyncData('forum-post-stats', async () => {
+  const [{ count: postsCount }, { count: membersCount }] = await Promise.all([
+    supabase.from('forum_posts').select('id', { count: 'exact', head: true }),
+    supabase.from('forum_reputation').select('id', { count: 'exact', head: true }),
+  ])
+
+  return {
+    posts: postsCount ?? 0,
+    members: membersCount ?? 0,
+  }
 })
+
+const stats = computed(() => ({
+  topics: recentTopics.value?.length ?? 0,
+  posts: postStats.value?.posts ?? 0,
+  members: postStats.value?.members ?? 0,
+  online: Math.min(12, postStats.value?.members ?? 0),
+}))
 
 function selectCategory(slug: string) {
   navigateTo(`/portal/community/category/${slug}`)

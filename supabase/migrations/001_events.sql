@@ -138,7 +138,7 @@ VALUES
     'Kreativna radionica: Proljeće u bojama',
     'Bojanje, kolažiranje i igra s temperama.',
     'Dođite na radionicu gdje ćemo zajedno dočarati dolazak proljeća kroz boje, forme i slobodnu kreativnu igru. Djeca uzrasta 2-5 godina istraživat će teksture, miješati boje i stvarati vlastite masterpiese. Voditelji su certificirani Montessori pedagozi.',
-    'Šarena Sfera Centar, Sarajevo',
+    'Šarena Sfera Centar, Banja Luka',
     (CURRENT_DATE + INTERVAL '7 days')::DATE + TIME '10:00',
     (CURRENT_DATE + INTERVAL '7 days')::DATE + TIME '11:30',
     2, 5, 15, 'creative', true, true
@@ -148,7 +148,7 @@ VALUES
     'Motoričke igre: Tijelo u pokretu',
     'Vježbe ravnoteže, koordinacije i grube motorike.',
     'Radionica posvećena motoričkom razvoju kroz igru i kretanje. Djeca uzrasta 3-6 godina razvijat će ravnotežu, koordinaciju i prostornu orijentaciju kroz zabavne aktivnosti. Prikladna obuća je obavezna.',
-    'Šarena Sfera Centar, Sarajevo',
+    'Šarena Sfera Centar, Banja Luka',
     (CURRENT_DATE + INTERVAL '14 days')::DATE + TIME '09:30',
     (CURRENT_DATE + INTERVAL '14 days')::DATE + TIME '11:00',
     3, 6, 20, 'motor', true, true
@@ -158,7 +158,7 @@ VALUES
     'Jezička radionica: Pričamo priče',
     'Pripovijedanje, lutke i razvoj vokabulara.',
     'Kroz priče, lutke i dramske igre, djeca razvijaju jezičke vještine, vocabularij i sposobnost naracije. Ova radionica posebno je korisna za djecu koja trebaju poticaj u jezičkom razvoju.',
-    'Šarena Sfera Centar, Sarajevo',
+    'Šarena Sfera Centar, Banja Luka',
     (CURRENT_DATE + INTERVAL '21 days')::DATE + TIME '10:00',
     (CURRENT_DATE + INTERVAL '21 days')::DATE + TIME '11:30',
     2, 6, 12, 'language', false, true

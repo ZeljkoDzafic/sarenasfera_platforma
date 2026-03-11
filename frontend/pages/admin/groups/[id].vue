@@ -5,8 +5,8 @@
       <div class="flex-1">
         <h1 class="font-display text-2xl font-bold text-gray-900">{{ group?.name ?? '...' }}</h1>
         <p class="text-sm text-gray-500 mt-0.5">
-          {{ group?.age_min }}–{{ group?.age_max }} godina
-          • {{ rosterItems.length }}/{{ group?.max_children }} djece
+          {{ formatAgeRange(group?.age_range_min, group?.age_range_max) }}
+          • {{ rosterItems.length }}/{{ group?.max_capacity }} djece
         </p>
       </div>
     </div>
@@ -129,7 +129,7 @@ const addingChild = ref(false)
 const { data: group, pending } = await useAsyncData(`admin-group-${groupId}`, async () => {
   const { data } = await supabase
     .from('groups')
-    .select('id, name, description, age_min, age_max, max_children, is_active')
+    .select('id, name, description, age_range_min, age_range_max, max_capacity, is_active')
     .eq('id', groupId)
     .single()
   return data
@@ -216,5 +216,10 @@ function firstStaffName(profiles: Array<{ full_name: string | null }> | null | u
 
 function firstUpcomingWorkshopTitle(workshops: Array<{ title: string | null }> | null | undefined): string {
   return workshops?.[0]?.title ?? 'Radionica'
+}
+
+function formatAgeRange(minMonths: number | null | undefined, maxMonths: number | null | undefined): string {
+  if (minMonths === null || minMonths === undefined || maxMonths === null || maxMonths === undefined) return 'Uzrast nije definisan'
+  return `${minMonths}-${maxMonths} mjeseci`
 }
 </script>

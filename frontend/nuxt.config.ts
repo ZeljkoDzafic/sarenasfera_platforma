@@ -15,13 +15,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     // Server-only (not exposed to client)
-    supabaseServiceKey: '',
+    supabaseServiceKey: process.env.NUXT_SUPABASE_SERVICE_KEY || process.env.SERVICE_ROLE_KEY || '',
     // Public (exposed to client)
     public: {
-      supabaseUrl: 'http://localhost:54321',
-      supabaseAnonKey: '',
-      apiUrl: 'http://localhost:8080',
-      appName: 'Šarena Sfera',
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
+      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || process.env.ANON_KEY || '',
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8080',
+      appName: process.env.NUXT_PUBLIC_APP_NAME || 'Šarena Sfera',
     },
   },
 

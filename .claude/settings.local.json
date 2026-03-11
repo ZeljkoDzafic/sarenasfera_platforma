@@ -22,7 +22,12 @@
       "Bash(sudo chown:*)",
       "Bash(npm audit fix:*)",
       "Bash(npm run dev:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(docker exec:*)",
+      "Bash(find:*)",
+      "Bash(node scripts/create-admin.js:*)",
+      "Bash(wget:*)",
+      "Bash(node scripts/create-demo-accounts.js:*)"
     ]
   }
 }

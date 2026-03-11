@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test'
 import { loadWorkspaceEnv } from './test/e2e/support/env'
 
 const workspaceEnv = loadWorkspaceEnv()
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3005'
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3008'
 
 export default defineConfig({
   testDir: './test/e2e',
@@ -19,7 +19,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 3005',
+    command: 'npm run dev -- --host 127.0.0.1 --port 3008',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

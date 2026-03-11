@@ -13,8 +13,8 @@
         </button>
 
         <NuxtLink to="/portal" class="flex items-center gap-2 text-gray-900">
-          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary-500 text-sm font-extrabold text-white">ŠS</span>
-          <span class="hidden text-lg font-bold sm:block">Šarena Sfera</span>
+          <img :src="logoImage" alt="Šarena Sfera" class="h-8 w-auto">
+          <span class="hidden text-sm font-semibold text-gray-500 sm:block">Portal</span>
         </NuxtLink>
 
         <nav class="hidden items-center gap-2 text-sm text-gray-500 md:flex" aria-label="Breadcrumb">
@@ -63,6 +63,8 @@ interface BreadcrumbItem {
   label: string
   path: string
 }
+
+const logoImage = '/logo.webp'
 
 defineEmits<{ (event: 'toggle-sidebar'): void; (event: 'sign-out'): void }>()
 

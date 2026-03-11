@@ -107,8 +107,8 @@ VALUES
     now() + interval '14 days',
     now() + interval '14 days' + interval '90 minutes',
     'in_person',
-    'Šarena Sfera Sarajevo',
-    'https://maps.google.com/?q=Sarena+Sfera+Sarajevo',
+    'Šarena Sfera Banja Luka',
+    'https://maps.google.com/?q=Sarena+Sfera+Banja+Luka',
     20,
     'workshop'
   ),
@@ -155,8 +155,8 @@ VALUES
     now() + interval '28 days',
     now() + interval '28 days' + interval '120 minutes',
     'in_person',
-    'Šarena Sfera Sarajevo',
-    'https://maps.google.com/?q=Sarena+Sfera+Sarajevo',
+    'Šarena Sfera Banja Luka',
+    'https://maps.google.com/?q=Sarena+Sfera+Banja+Luka',
     40,
     'open_day'
   ),

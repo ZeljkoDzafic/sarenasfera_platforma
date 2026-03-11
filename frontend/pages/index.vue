@@ -11,7 +11,7 @@
             Jedna platforma za praćenje razvoja djeteta od prve radionice do školskog polaska.
           </h1>
           <p class="mt-5 max-w-2xl text-lg leading-8 text-gray-600">
-            Šarena Sfera spaja opservacije stručnog tima, razvojne domene, edukativne resurse i kućne aktivnosti u jasan roditeljski portal.
+            Šarena Sfera spaja dječiju knjižaru, kreativno-edukativni kutak, roditeljsku zajednicu i razvojni portal u jedno mjesto podrške za porodicu.
           </p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             <NuxtLink to="/auth/register" class="btn-primary px-6 py-3 text-base">
@@ -23,8 +23,8 @@
           </div>
           <div class="mt-8 grid max-w-xl grid-cols-3 gap-3 text-sm">
             <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-              <div class="text-2xl font-bold text-primary-600">6</div>
-              <div class="mt-1 text-gray-500">razvojnih domena</div>
+              <div class="text-2xl font-bold text-primary-600">0-6</div>
+              <div class="mt-1 text-gray-500">godina podrške</div>
             </div>
             <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
               <div class="text-2xl font-bold text-brand-green">1</div>
@@ -66,7 +66,7 @@
               <div class="rounded-2xl bg-gradient-to-r from-primary-500 to-brand-pink p-4">
                 <p class="text-sm font-semibold">Sljedeća radionica</p>
                 <p class="mt-1 text-lg font-bold">Motorički izazovi kroz igru</p>
-                <p class="mt-1 text-sm text-white/85">Subota u 11:00 • Sarajevo</p>
+                <p class="mt-1 text-sm text-white/85">Subota u 11:00 • Banja Luka</p>
               </div>
             </div>
           </div>
@@ -86,7 +86,7 @@
     </section>
 
     <section class="px-4 py-16 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-6xl">
+      <div class="mx-auto max-w-6xl" id="o-nama">
         <div class="mb-8 flex items-end justify-between gap-4">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">Zašto radi</p>
@@ -117,6 +117,89 @@
       </div>
     </section>
 
+    <section class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">Iz baze</p>
+            <h2 class="mt-2 font-display text-3xl font-bold">Najnovije sa bloga</h2>
+          </div>
+          <NuxtLink to="/blog" class="text-sm font-semibold text-primary-600 hover:text-primary-700">
+            Otvori blog
+          </NuxtLink>
+        </div>
+
+        <div v-if="latestBlogPosts.length > 0" class="grid gap-4 md:grid-cols-3">
+          <NuxtLink
+            v-for="post in latestBlogPosts"
+            :key="post.id"
+            :to="`/blog/${post.slug}`"
+            class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <div class="mb-3 flex items-center gap-2 text-xs text-gray-400">
+              <span class="rounded-full bg-primary-50 px-3 py-1 font-semibold text-primary-700">
+                {{ post.category || 'Blog' }}
+              </span>
+              <span>{{ formatDate(post.published_at ?? post.created_at) }}</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">{{ post.title }}</h3>
+            <p class="mt-3 text-sm leading-6 text-gray-600">
+              {{ post.excerpt || excerptFromContent(post.content) }}
+            </p>
+            <div class="mt-4 text-sm font-semibold text-primary-600">Čitaj članak →</div>
+          </NuxtLink>
+        </div>
+
+        <div v-else class="rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
+          <p class="text-sm text-gray-500">Blog se učitava direktno iz baze i ovdje će prikazati prve objavljene članke.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team / About Section -->
+    <section class="px-4 py-20 sm:px-6 lg:px-8 bg-gradient-to-br from-primary-50 to-white">
+      <div class="mx-auto max-w-6xl">
+        <div class="text-center mb-12">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">O nama</p>
+          <h2 class="mt-2 font-display text-3xl font-bold">Šarena Sfera</h2>
+        </div>
+
+        <div class="grid gap-8 lg:grid-cols-2 lg:items-center">
+          <div class="order-2 lg:order-1">
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-4">
+              Projekat Gordane Kuzmanović Džafić
+            </h3>
+            <p class="text-gray-700 leading-relaxed mb-4">
+              Šarenu Sferu danas vodi
+              <strong class="text-primary-700">Gordana Kuzmanović Džafić</strong>, diplomirani psiholog i psihoterapeut pod supervizijom.
+              Poslovanje i razvoj platforme realizuju se kroz
+              <a href="https://technetis.net" target="_blank" rel="noreferrer" class="text-primary-700 underline">Technetis s.p.</a>.
+            </p>
+            <p class="text-gray-700 leading-relaxed mb-6">
+              Fokus ostaje na prostoru ispunjenom kvalitetnim sadržajem, sigurnim izborima i toplinom zajedništva.
+              Od kreativnih radionica i čitaonica do roditeljskog portala, Šarena Sfera podržava odnos djeteta sa sobom,
+              sa drugima i posebno sa roditeljima.
+            </p>
+            <div class="flex flex-wrap gap-3">
+              <div class="badge badge-premium">Psihologija razvoja</div>
+              <div class="badge badge-paid">Podrška roditeljima</div>
+              <div class="badge badge-free">Knjige, čitaonice i radionice</div>
+            </div>
+          </div>
+
+          <div class="order-1 lg:order-2">
+            <div class="rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                :src="gordanaImage"
+                alt="Gordana Kuzmanović Džafić"
+                class="w-full h-auto object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="px-4 pb-20 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-6xl rounded-[32px] bg-gray-950 px-6 py-10 text-white sm:px-10">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -140,6 +223,20 @@
 </template>
 
 <script setup lang="ts">
+const gordanaImage = '/gordana.webp'
+const { listPosts } = useBlogAdmin()
+const { data: homepageBlogPosts } = await useAsyncData('homepage-blog-posts', () => listPosts(false))
+
+const latestBlogPosts = computed(() => (homepageBlogPosts.value ?? []).slice(0, 3))
+
+function excerptFromContent(content: string | null | undefined): string {
+  return (content ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 145) || 'Blog sadržaj Šarene Sfere.'
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString('bs-BA', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
 useSeoMeta({
   title: 'Šarena Sfera — Platforma za razvoj djece i podršku roditeljima',
   description: 'Praćenje razvoja djece, radionice, edukacija za roditelje i razvojni pasoš na jednoj platformi.',

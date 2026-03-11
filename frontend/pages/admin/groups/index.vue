@@ -22,8 +22,7 @@
           <div>
             <h3 class="font-display font-bold text-lg text-gray-900">{{ group.name }}</h3>
             <p class="text-xs text-gray-500 mt-0.5">
-              {{ group.age_min }}–{{ group.age_max }} godina
-              {{ group.schedule_days?.join(', ') ? `• ${group.schedule_days.join(', ')}` : '' }}
+              {{ formatAgeRange(group.age_range_min, group.age_range_max) }}
             </p>
           </div>
           <span
@@ -38,12 +37,12 @@
         <div class="mb-3">
           <div class="flex justify-between text-xs text-gray-500 mb-1">
             <span>Kapacitet</span>
-            <span>{{ group.child_groups?.length ?? 0 }} / {{ group.max_children ?? '—' }}</span>
+            <span>{{ group.child_groups?.length ?? 0 }} / {{ group.max_capacity ?? '—' }}</span>
           </div>
           <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               class="h-full rounded-full bg-primary-500 transition-all"
-              :style="{ width: group.max_children ? `${Math.min(100, ((group.child_groups?.length ?? 0) / group.max_children) * 100)}%` : '0%' }"
+              :style="{ width: group.max_capacity ? `${Math.min(100, ((group.child_groups?.length ?? 0) / group.max_capacity) * 100)}%` : '0%' }"
             />
           </div>
         </div>
@@ -76,16 +75,16 @@
             </div>
             <div class="grid grid-cols-3 gap-3">
               <div>
-                <label class="label">Min. dob (god.)</label>
-                <input v-model.number="createForm.age_min" type="number" class="input" min="1" max="6" />
+                <label class="label">Min. dob (mjeseci)</label>
+                <input v-model.number="createForm.age_range_min" type="number" class="input" min="0" max="84" />
               </div>
               <div>
-                <label class="label">Max. dob (god.)</label>
-                <input v-model.number="createForm.age_max" type="number" class="input" min="1" max="8" />
+                <label class="label">Max. dob (mjeseci)</label>
+                <input v-model.number="createForm.age_range_max" type="number" class="input" min="1" max="96" />
               </div>
               <div>
                 <label class="label">Kapacitet</label>
-                <input v-model.number="createForm.max_children" type="number" class="input" min="1" max="30" />
+                <input v-model.number="createForm.max_capacity" type="number" class="input" min="1" max="30" />
               </div>
             </div>
             <div>
@@ -115,17 +114,17 @@ const creating = ref(false)
 
 const createForm = reactive({
   name: '',
-  age_min: 2,
-  age_max: 4,
-  max_children: 12,
+  age_range_min: 0,
+  age_range_max: 12,
+  max_capacity: 8,
   description: '',
 })
 
 const { data: groups, pending, refresh } = await useAsyncData('admin-groups', async () => {
   const { data } = await supabase
     .from('groups')
-    .select('id, name, description, age_min, age_max, max_children, schedule_days, is_active, child_groups(id)')
-    .order('name')
+    .select('id, name, description, age_range_min, age_range_max, max_capacity, is_active, child_groups(child_id)')
+    .order('age_range_min')
   return data ?? []
 })
 
@@ -134,15 +133,20 @@ async function createGroup() {
   creating.value = true
   await supabase.from('groups').insert({
     name: createForm.name,
-    age_min: createForm.age_min,
-    age_max: createForm.age_max,
-    max_children: createForm.max_children,
+    age_range_min: createForm.age_range_min,
+    age_range_max: createForm.age_range_max,
+    max_capacity: createForm.max_capacity,
     description: createForm.description || null,
     is_active: true,
   })
   showCreate.value = false
   creating.value = false
-  Object.assign(createForm, { name: '', age_min: 2, age_max: 4, max_children: 12, description: '' })
+  Object.assign(createForm, { name: '', age_range_min: 0, age_range_max: 12, max_capacity: 8, description: '' })
   await refresh()
+}
+
+function formatAgeRange(minMonths: number | null, maxMonths: number | null): string {
+  if (minMonths === null || maxMonths === null) return 'Uzrast nije definisan'
+  return `${minMonths}-${maxMonths} mjeseci`
 }
 </script>

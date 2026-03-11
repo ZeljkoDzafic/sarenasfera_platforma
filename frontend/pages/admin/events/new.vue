@@ -121,7 +121,7 @@
               type="text"
               required
               class="input"
-              placeholder="npr. Šarena Sfera Centar, Sarajevo"
+              placeholder="npr. Šarena Sfera Centar, Banja Luka"
             />
           </div>
 
@@ -300,7 +300,7 @@ const form = reactive({
   date: '',
   start_time: '',
   end_time: '',
-  location: 'Šarena Sfera Centar, Sarajevo',
+  location: 'Šarena Sfera Centar, Banja Luka',
   location_url: '',
   age_min: 2,
   age_max: 6,
